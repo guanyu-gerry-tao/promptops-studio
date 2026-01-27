@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:9.6.0
+    image: mysql:8.0
     container_name: promptops-mysql
     ports:
       - "3306:3306"
@@ -11,3 +11,7 @@ services:
       MYSQL_DATABASE: promptops
       MYSQL_USER: promptops
       MYSQL_PASSWORD: password
+      TZ: America/Los_Angeles
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
