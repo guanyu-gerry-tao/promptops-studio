@@ -1,0 +1,28 @@
+# Docker volumes and data
+mysql/data/
+redis/data/
+milvus/data/
+kafka/data/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build outputs
+**/build/
+**/target/
+**/dist/
+**/.gradle/
+**/node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
