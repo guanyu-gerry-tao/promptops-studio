@@ -1,0 +1,13 @@
+services:
+  mysql:
+    image: mysql:9.6.0
+    container_name: promptops-mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: promptops
+      MYSQL_USER: promptops
+      MYSQL_PASSWORD: password
