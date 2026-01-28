@@ -8,7 +8,8 @@ redis/data/*
 !redis/data/.gitkeep
 
 # Kafka
-kafka/data/
+kafka/data/*
+!kafka/data/.gitkeep
 
 # Milvus
 milvus/etcd/*
