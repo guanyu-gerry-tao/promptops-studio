@@ -1,8 +1,22 @@
-# Docker volumes and data
-mysql/data/
-redis/data/
-milvus/data/
+# Docker volumes and data (keep directory structure only)
+# MySQL
+mysql/data/*
+!mysql/data/.gitkeep
+
+# Redis
+redis/data/*
+!redis/data/.gitkeep
+
+# Kafka
 kafka/data/
+
+# Milvus
+milvus/etcd/*
+!milvus/etcd/.gitkeep
+milvus/minio/*
+!milvus/minio/.gitkeep
+milvus/milvus/*
+!milvus/milvus/.gitkeep
 
 # IDE
 .idea/
