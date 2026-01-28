@@ -27,3 +27,8 @@ Thumbs.db
 .env
 .env.local
 .venv/
+
+# Project-specific
+CLAUDE.md
+__pycache__/
+*.pyc
