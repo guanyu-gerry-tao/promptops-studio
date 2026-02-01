@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 
 import java.util.Optional;
 
@@ -15,17 +16,33 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @DataJpaTest does the following:
  * 1. Only loads JPA-related configuration (faster than full Spring context)
- * 2. Uses H2 in-memory database (does not affect real MySQL)
- * 3. Auto-rolls back after each test method (no dirty data left behind)
+ * 2. Auto-rolls back after each test method (no dirty data left behind)
+ *
+ * @AutoConfigureTestDatabase(replace = NONE) tells Spring to use real MySQL
+ * instead of replacing with H2 in-memory database.
  */
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class UserRepositoryTest {
 
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private ProjectRepository projectRepository;
+
+  @Autowired
+  private AuditLogsRepository auditLogsRepository;
+
   @BeforeEach
   void setUp() {
+    // Clean up existing data to ensure tests start from a known state.
+    // Delete child tables first (projects, audit_logs), then parent table (users),
+    // because of foreign key constraints referencing users.id.
+    projectRepository.deleteAll();
+    auditLogsRepository.deleteAll();
+    userRepository.deleteAll();
+
     User user = new User();
     user.setUsername("john");
     user.setEmail("john@example.com");
@@ -36,10 +53,10 @@ public class UserRepositoryTest {
   }
 
   /**
-   * Test: save a user and find by username.
+   * Test: find by username.
    */
   @Test
-  void testSaveAndFindByUsername() {
+  void testFindByUsername() {
 
     Optional<User> result = userRepository.findByUsername("john");
 
@@ -52,7 +69,7 @@ public class UserRepositoryTest {
    * Test: find a user by email.
    */
   @Test
-  void testSaveAndFindByEmail() {
+  void testFindByEmail() {
     Optional<User> result = userRepository.findByEmail("john@example.com");
 
     assertEquals("john", result.get().getUsername());

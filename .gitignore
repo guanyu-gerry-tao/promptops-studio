@@ -47,3 +47,6 @@ Thumbs.db
 CLAUDE.md
 __pycache__/
 *.pyc
+
+# Internal docs (learning notes, plans) - not for public
+Docs/INTERNAL/
