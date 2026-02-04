@@ -32,4 +32,16 @@ public interface AuditLogsRepository extends JpaRepository<AuditLogs, Long> {
    * @return list of audit log entries for this user
    */
   List<AuditLogs> findByUserId(Long userId);
+
+  /**
+   * Find all audit logs for a specific resource.
+   *
+   * Spring Data JPA auto-generates the query:
+   * SELECT * FROM audit_logs WHERE resource_type = ? AND resource_id = ?
+   *
+   * @param resourceType the resource type (e.g., "PROJECT", "USER")
+   * @param resourceId   the resource ID
+   * @return list of audit log entries for this resource
+   */
+  List<AuditLogs> findByResourceTypeAndResourceId(String resourceType, Long resourceId);
 }

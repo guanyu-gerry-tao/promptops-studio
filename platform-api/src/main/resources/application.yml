@@ -11,3 +11,10 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
+
+# JWT configuration
+# ${JWT_SECRET:default} syntax means: read env var JWT_SECRET, if not set use the default value.
+# In production, set the JWT_SECRET environment variable to a real random key.
+jwt:
+  secret: ${JWT_SECRET:PRODUCTION_MODE_DEFAULT_JWT_SECRET}
+  expiration: 86400000  # 24 hours in milliseconds (24 * 60 * 60 * 1000)
