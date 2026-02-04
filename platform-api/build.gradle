@@ -49,8 +49,12 @@ dependencies {
     // --- Testing ---
     testImplementation 'org.springframework.boot:spring-boot-starter-test'           // JUnit 5 + Mockito + AssertJ + other test utilities
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'  // @DataJpaTest annotation for repository-only tests (Spring Boot 4)
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'    // @WebMvcTest annotation for controller-only tests (Spring Boot 4)
     testImplementation 'com.h2database:h2'                                           // In-memory database for fast isolated tests
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                     // JUnit 5 test launcher (required at runtime to discover and run tests)
+
+    // --- JSON ---
+    implementation 'com.fasterxml.jackson.core:jackson-databind'                     // JSON serialization: converts Java objects to/from JSON
 }
 
 tasks.named('test') {
