@@ -25,15 +25,36 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly 'com.mysql:mysql-connector-j'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // --- Core ---
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'   // ORM layer: maps Java objects to database tables via JPA/Hibernate
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'     // REST API support: @RestController, @GetMapping, etc.
+
+    // --- Developer tools ---
+    compileOnly 'org.projectlombok:lombok'                                   // Generates getters/setters/constructors at compile time via annotations
+    annotationProcessor 'org.projectlombok:lombok'                           // Lombok's annotation processor (required for compile-time code generation)
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'          // Auto-restart on code changes during development
+
+    // --- Database ---
+    runtimeOnly 'com.mysql:mysql-connector-j'                                // MySQL JDBC driver: lets Java talk to MySQL (only needed at runtime)
+
+    // --- Security & Auth ---
+    implementation 'org.springframework.security:spring-security-crypto'     // BCrypt password hashing only (not the full Spring Security framework)
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'                         // JWT API interfaces: Jwts.builder(), Jwts.parser(), etc.
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'                          // JWT core implementation (pluggable: your code never imports this directly)
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'                       // JWT JSON serialization via Jackson (pluggable: could swap for Gson)
+
+    // --- Validation ---
+    implementation 'org.springframework.boot:spring-boot-starter-validation' // Bean validation annotations: @NotBlank, @Email, @Size, @Pattern
+
+    // --- Testing ---
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'           // JUnit 5 + Mockito + AssertJ + other test utilities
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'  // @DataJpaTest annotation for repository-only tests (Spring Boot 4)
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'    // @WebMvcTest annotation for controller-only tests (Spring Boot 4)
+    testImplementation 'com.h2database:h2'                                           // In-memory database for fast isolated tests
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                     // JUnit 5 test launcher (required at runtime to discover and run tests)
+
+    // --- JSON ---
+    implementation 'com.fasterxml.jackson.core:jackson-databind'                     // JSON serialization: converts Java objects to/from JSON
 }
 
 tasks.named('test') {
