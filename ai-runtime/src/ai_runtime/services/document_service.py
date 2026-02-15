@@ -27,6 +27,9 @@ class DocumentService:
         # Text splitter: breaks long text into smaller chunks
         # Separators are tried in order — it prefers splitting at headers,
         # then paragraphs, then lines, then words.
+
+        # NOTE:
+        # separators define where to split the document. starting from ##: markdown second headline.
         self.splitter = RecursiveCharacterTextSplitter(
             chunk_size=settings.chunk_size,
             chunk_overlap=settings.chunk_overlap,
