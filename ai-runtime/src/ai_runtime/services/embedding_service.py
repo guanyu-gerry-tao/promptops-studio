@@ -28,15 +28,14 @@ class EmbeddingService:
             Each vector is a list of 1536 floats.
             e.g. [[0.12, 0.85, ...], [0.34, 0.21, ...], [0.56, 0.78, ...]]
         """
-        # TODO(human): Call the OpenAI embeddings API
-        # Hints:
-        #   1. Use self.client.embeddings.create(model=self.model, input=texts)
-        #   2. The response has a .data attribute, which is a list of objects
-        #   3. Each object has an .embedding attribute (the vector)
-        #   4. Return the list of vectors in the same order as the input texts
-        #   5. Tip: response.data is already sorted by index, so you can do:
-        #      return [item.embedding for item in response.data]
-        raise NotImplementedError("TODO: implement embed_texts")
+        if not texts:
+            return []
+
+        response = self.client.embeddings.create(
+            model=self.model,
+            input=texts,
+        )
+        return [item.embedding for item in response.data]
 
     def embed_single(self, text: str) -> list[float]:
         """

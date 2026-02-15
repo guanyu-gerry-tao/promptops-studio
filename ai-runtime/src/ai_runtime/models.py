@@ -41,6 +41,7 @@ class RetrieveRequest(BaseModel):
     project_id: int
     query: str
     top_k: int = 5  # Default: return top 5 results
+    generate_answer: bool = True  # Whether to call LLM to generate a final answer
 
 
 class ChunkResult(BaseModel):

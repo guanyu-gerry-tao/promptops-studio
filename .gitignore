@@ -44,9 +44,16 @@ Thumbs.db
 .venv/
 
 # Project-specific
-CLAUDE.md
 __pycache__/
 *.pyc
 
 # Internal docs (learning notes, plans) - not for public
 Docs/INTERNAL/
+
+# Mentor Guided Learning system folder
+.LEARNING/
+
+# AI-assistance
+CLAUDE.md
+AGENTS.md
+GEMINI.md

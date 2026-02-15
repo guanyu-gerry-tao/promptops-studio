@@ -32,35 +32,43 @@ def retrieve(
       2. Search Milvus for similar vectors → get relevant chunks
       3. (Optional) Send chunks + query to OpenAI chat → get a human-readable answer
     """
-    # TODO(human): Implement the retrieve logic
-    # Hints:
-    #
-    # Step 1: Embed the query
-    #   query_vector = embedding_svc.embed_single(request.query)
-    #
-    # Step 2: Search Milvus
-    #   raw_results = milvus.search(request.project_id, query_vector, request.top_k)
-    #   Convert raw_results (list of dicts) to list of ChunkResult objects:
-    #   results = [ChunkResult(**r) for r in raw_results]
-    #
-    # Step 3 (optional): Generate LLM answer
-    #   If results is not empty, call OpenAI chat to generate an answer:
-    #     client = openai.OpenAI(api_key=settings.openai_api_key)
-    #     context = "\n\n".join([f"[Source: {r.title}]\n{r.text}" for r in results])
-    #     response = client.chat.completions.create(
-    #         model=settings.openai_chat_model,
-    #         messages=[
-    #             {"role": "system", "content": "Answer based ONLY on the provided context. Cite source titles."},
-    #             {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {request.query}"},
-    #         ],
-    #     )
-    #     answer = response.choices[0].message.content
-    #   If results is empty, set answer = None
-    #
-    # Step 4: Return RetrieveResponse(
-    #     project_id=request.project_id,
-    #     query=request.query,
-    #     results=results,
-    #     answer=answer,
-    # )
-    raise NotImplementedError("TODO: implement retrieve")
+    query_vector = embedding_svc.embed_single(request.query)
+    top_k = request.top_k or settings.retrieve_top_k
+
+    raw_results = milvus.search(
+        project_id=request.project_id,
+        query_embedding=query_vector,
+        top_k=top_k,
+    )
+    results = [ChunkResult(**r) for r in raw_results]
+
+    answer: str | None = None
+    if request.generate_answer and results:
+        try:
+            client = openai.OpenAI(api_key=settings.openai_api_key)
+            context = "\n\n".join(
+                [f"[Source: {r.title}]\n{r.text}" for r in results]
+            )
+            response = client.chat.completions.create(
+                model=settings.openai_chat_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Answer based ONLY on the provided context. Cite source titles.",
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Context:\n{context}\n\nQuestion: {request.query}",
+                    },
+                ],
+            )
+            answer = response.choices[0].message.content
+        except Exception:
+            answer = None
+
+    return RetrieveResponse(
+        project_id=request.project_id,
+        query=request.query,
+        results=results,
+        answer=answer,
+    )

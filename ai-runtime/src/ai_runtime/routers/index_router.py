@@ -24,19 +24,25 @@ def index_document(
 
     Flow: receive document → chunk → embed → store in Milvus
     """
-    # TODO(human): Implement the endpoint logic
-    # Hints:
-    #   1. Call doc_service.process_document(...) with the request fields
-    #   2. Wrap in try/except to catch errors
-    #   3. Return IndexResponse with status "SUCCESS" and chunks_count
-    #   4. On error, return IndexResponse with status "FAILED" and the error message
-    #
-    # Example success response:
-    #   IndexResponse(
-    #       project_id=request.project_id,
-    #       doc_id=request.doc_id,
-    #       chunks_count=7,
-    #       status="SUCCESS",
-    #       message="Indexed 7 chunks for document 42",
-    #   )
-    raise NotImplementedError("TODO: implement index_document")
+    try:
+        chunks_count = doc_service.process_document(
+            project_id=request.project_id,
+            doc_id=request.doc_id,
+            title=request.title,
+            content=request.content,
+        )
+        return IndexResponse(
+            project_id=request.project_id,
+            doc_id=request.doc_id,
+            chunks_count=chunks_count,
+            status="SUCCESS",
+            message=f"Indexed {chunks_count} chunks for document {request.doc_id}",
+        )
+    except Exception as e:
+        return IndexResponse(
+            project_id=request.project_id,
+            doc_id=request.doc_id,
+            chunks_count=0,
+            status="FAILED",
+            message=str(e),
+        )

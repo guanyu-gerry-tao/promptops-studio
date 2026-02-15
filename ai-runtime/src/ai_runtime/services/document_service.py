@@ -57,25 +57,27 @@ class DocumentService:
         Returns:
             Number of chunks created and stored.
         """
-        # TODO(human): Implement the 3-step pipeline
-        # Hints:
-        #   1. Split: chunks = self.splitter.split_text(content)
-        #      This returns a list of strings, e.g. ["chunk 0 text", "chunk 1 text", ...]
-        #
-        #   2. Embed: embeddings = self.embedding.embed_texts(chunks)
-        #      This returns a list of vectors, one per chunk.
-        #
-        #   3. Prepare the data lists for Milvus insert:
-        #      - doc_ids:    [doc_id] * len(chunks)       → same doc_id for all chunks
-        #      - chunk_ids:  list(range(len(chunks)))     → 0, 1, 2, ...
-        #      - titles:     [title] * len(chunks)        → same title for all chunks
-        #      - texts:      chunks                       → the chunk texts
-        #      - embeddings: embeddings                   → the embedding vectors
-        #
-        #   4. Insert: self.milvus.insert_chunks(project_id, doc_ids, chunk_ids, titles, texts, embeddings)
-        #
-        #   5. Return len(chunks)
-        raise NotImplementedError("TODO: implement process_document")
+        chunks = self.splitter.split_text(content)
+        if not chunks:
+            return 0
+
+        embeddings = self.embedding.embed_texts(chunks)
+
+        doc_ids = [doc_id] * len(chunks)
+        chunk_ids = list(range(len(chunks)))
+        titles = [title] * len(chunks)
+        texts = chunks
+
+        self.milvus.insert_chunks(
+            project_id=project_id,
+            doc_ids=doc_ids,
+            chunk_ids=chunk_ids,
+            titles=titles,
+            texts=texts,
+            embeddings=embeddings,
+        )
+
+        return len(chunks)
 
     def delete_document(self, project_id: int, doc_id: int):
         """Remove all chunks for a document from Milvus (for re-indexing)."""
