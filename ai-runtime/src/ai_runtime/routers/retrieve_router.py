@@ -1,5 +1,5 @@
 """
-POST /retrieve endpoint.
+POST /retrieve-document endpoint.
 
 Searches the knowledge base for chunks relevant to a query,
 and optionally generates an LLM answer based on the retrieved context.
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["retrieval"])
 
 
-@router.post("/retrieve", response_model=RetrieveResponse)
+@router.post("/retrieve-document", response_model=RetrieveResponse)
 def retrieve(
     request: RetrieveRequest,
     milvus: MilvusService = Depends(get_milvus_service),
@@ -41,7 +41,7 @@ def retrieve(
       2. Search Milvus for similar vectors → get relevant chunks
       3. (Optional) Send chunks + query to OpenAI chat → get a human-readable answer
     """
-    logger.info("POST /retrieve: project=%d, query='%s'", request.project_id, request.query[:80])
+    logger.info("POST /retrieve-document: project=%d, query='%s'", request.project_id, request.query[:80])
 
     # Step 1 & 2: Embed query + search Milvus
     # (EmbeddingError / MilvusError will bubble up to global handlers)

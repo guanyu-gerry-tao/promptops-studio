@@ -16,7 +16,7 @@ from pydantic import BaseModel
 # ──────────────────────────────────────
 
 class IndexRequest(BaseModel):
-    """Request body for POST /index — index a document into Milvus."""
+    """Request body for POST /index-document — index a document into Milvus."""
     project_id: int
     doc_id: int
     title: str
@@ -24,7 +24,7 @@ class IndexRequest(BaseModel):
 
 
 class IndexResponse(BaseModel):
-    """Response body for POST /index."""
+    """Response body for POST /index-document."""
     project_id: int
     doc_id: int
     chunks_count: int
@@ -33,11 +33,11 @@ class IndexResponse(BaseModel):
 
 
 # ──────────────────────────────────────
-# /retrieve endpoint
+# /retrieve-document endpoint
 # ──────────────────────────────────────
 
 class RetrieveRequest(BaseModel):
-    """Request body for POST /retrieve — search the knowledge base."""
+    """Request body for POST /retrieve-document — search the knowledge base."""
     project_id: int
     query: str
     top_k: int = 5  # Default: return top 5 results
@@ -54,7 +54,7 @@ class ChunkResult(BaseModel):
 
 
 class RetrieveResponse(BaseModel):
-    """Response body for POST /retrieve."""
+    """Response body for POST /retrieve-document."""
     project_id: int
     query: str
     results: list[ChunkResult]

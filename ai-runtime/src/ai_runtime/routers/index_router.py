@@ -1,5 +1,5 @@
 """
-POST /index endpoint.
+POST /index-document endpoint.
 
 Called by Platform API after a document is uploaded.
 Chunks the document, generates embeddings, and stores them in Milvus.
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["indexing"])
 
 
-@router.post("/index", response_model=IndexResponse)
+@router.post("/index-document", response_model=IndexResponse)
 def index_document(
     request: IndexRequest,
     doc_service: DocumentService = Depends(get_document_service),
@@ -32,7 +32,7 @@ def index_document(
 
     Flow: receive document → chunk → embed → store in Milvus
     """
-    logger.info("POST /index: project=%d, doc_id=%d", request.project_id, request.doc_id)
+    logger.info("POST /index-document: project=%d, doc_id=%d", request.project_id, request.doc_id)
 
     chunks_count = doc_service.process_document(
         project_id=request.project_id,

@@ -86,24 +86,26 @@ public class KbDocServiceImpl implements KbDocService {
                     "content", content
             );
 
+            // Using RestClient to send a POST request to ai-runtime.
+            RestClient.RequestBodySpec request = restClient.post()
+                .uri("/index-document")
+                .contentType(MediaType.APPLICATION_JSON);
+
+            RestClient.ResponseSpec response = request.body(requestBody).retrieve();
+
             @SuppressWarnings("unchecked")
-            Map<String, Object> response = restClient.post()
-                    .uri("/index")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(Map.class);
+            Map<String, Object> responseBody = response.body(Map.class);
 
             // 4. Update status based on response
-            String status = (String) response.get("status");
+            String status = (String) responseBody.get("status");
             if ("SUCCESS".equals(status)) {
-                Integer chunksCount = (Integer) response.get("chunks_count");
+                Integer chunksCount = (Integer) responseBody.get("chunks_count");
                 doc.setStatus("INDEXED");
                 doc.setChunksCount(chunksCount);
                 doc.setErrorMessage(null);
                 log.info("KbDoc id={} indexed successfully: {} chunks", doc.getId(), chunksCount);
             } else {
-                String message = (String) response.get("message");
+                String message = (String) responseBody.get("message");
                 doc.setStatus("FAILED");
                 doc.setErrorMessage(message);
                 log.error("KbDoc id={} indexing failed: {}", doc.getId(), message);
@@ -157,7 +159,7 @@ public class KbDocServiceImpl implements KbDocService {
 
         try {
             Map<String, Object> response = restClient.post()
-                    .uri("/retrieve")
+                    .uri("/retrieve-document")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(requestBody)
                     .retrieve()
