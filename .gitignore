@@ -34,6 +34,11 @@ milvus/milvus/*
 # OS
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+
+# Git backup
+.git-backup/
 
 # Logs
 *.log
@@ -57,3 +62,4 @@ Docs/INTERNAL/
 CLAUDE.md
 AGENTS.md
 GEMINI.md
+CLAUDE.backup.md
