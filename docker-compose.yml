@@ -17,7 +17,7 @@ services:
       - --collation-server=utf8mb4_unicode_ci
 
   weaviate:
-    image: semitechnologies/weaviate:1.24.6
+    image: semitechnologies/weaviate:1.28.4
     container_name: promptops-weaviate
     ports:
       - "8080:8080"

@@ -60,6 +60,19 @@ class WeaviateError(AIRuntimeError):
     pass
 
 
+class RerankError(AIRuntimeError):
+    """
+    Raised when the Bedrock Cohere Rerank API call fails.
+
+    Common causes:
+      - Missing or invalid AWS credentials
+      - Bedrock model access not enabled for this region
+      - Network timeout
+      - Invalid input (empty chunks list)
+    """
+    pass
+
+
 class DocumentProcessingError(AIRuntimeError):
     """
     Raised when the document processing pipeline fails.

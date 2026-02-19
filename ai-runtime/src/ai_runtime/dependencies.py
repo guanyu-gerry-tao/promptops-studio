@@ -21,6 +21,7 @@ from ai_runtime.services.milvus_service import MilvusService
 from ai_runtime.services.weaviate_service import WeaviateService
 from ai_runtime.services.embedding_service import EmbeddingService
 from ai_runtime.services.document_service import DocumentService
+from ai_runtime.services.rerank_service import RerankService
 
 
 @lru_cache()
@@ -53,10 +54,16 @@ def get_embedding_service() -> EmbeddingService:
 
 
 @lru_cache()
+def get_rerank_service() -> RerankService:
+    """Singleton RerankService instance (Bedrock Cohere Rerank)."""
+    return RerankService(get_settings())
+
+
+@lru_cache()
 def get_document_service() -> DocumentService:
-    """Singleton DocumentService — dual-writes to both Milvus and Weaviate."""
+    """Singleton DocumentService — Weaviate only (Milvus is dead code, passed as None)."""
     return DocumentService(
-        milvus_service=get_milvus_service(),
+        milvus_service=None,   # Milvus phased out; DocumentService no longer calls it
         weaviate_service=get_weaviate_service(),
         embedding_service=get_embedding_service(),
         settings=get_settings(),

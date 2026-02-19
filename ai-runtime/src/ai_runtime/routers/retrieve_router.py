@@ -18,9 +18,11 @@ from ai_runtime.config import Settings
 from ai_runtime.models import RetrieveRequest, RetrieveResponse, ChunkResult
 from ai_runtime.services.weaviate_service import WeaviateService
 from ai_runtime.services.embedding_service import EmbeddingService
+from ai_runtime.services.rerank_service import RerankService
 from ai_runtime.dependencies import (
     get_weaviate_service,
     get_embedding_service,
+    get_rerank_service,
     get_settings,
 )
 
@@ -34,6 +36,7 @@ def retrieve(
     request: RetrieveRequest,
     weaviate_svc: WeaviateService = Depends(get_weaviate_service),
     embedding_svc: EmbeddingService = Depends(get_embedding_service),
+    rerank_svc: RerankService = Depends(get_rerank_service),
     settings: Settings = Depends(get_settings),
 ) -> RetrieveResponse:
     """
@@ -65,10 +68,24 @@ def retrieve(
         top_k=top_k,
     )
 
-    results = [ChunkResult(**r) for r in raw_results]
-    logger.info("Retrieved %d chunks for project %d", len(results), request.project_id)
+    # Step 3: Optional reranking
+    # When enabled, fetch more candidates (rerank_top_k) then let the
+    # Cross-Encoder score them and keep only the best rerank_top_n.
+    if settings.rerank_enabled and raw_results:
+        logger.info("Reranking enabled — reranking %d candidates", len(raw_results))
+        raw_results = rerank_svc.rerank(
+            query=request.query,
+            chunks=raw_results,
+            top_n=settings.rerank_top_n,
+        )
 
-    # Step 3: Optional LLM answer generation
+    results = [ChunkResult(**r) for r in raw_results]
+    logger.info(
+        "Final results: %d chunks for project %d (rerank=%s)",
+        len(results), request.project_id, settings.rerank_enabled,
+    )
+
+    # Step 4: Optional LLM answer generation (unchanged)
     # If LLM fails, we still return the search results (just without an answer).
     answer: str | None = None
     if request.generate_answer and results:

@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     rerank_top_k: int = 20       # candidates to fetch before reranking
     rerank_top_n: int = 5        # results to keep after reranking (≤ rerank_top_k)
 
+    # --- Reranking (Amazon Bedrock, Cohere Rerank model) ---
+    # Set RERANK_ENABLED=true in .env to activate.
+    # AWS credentials are read from ~/.aws/credentials automatically by boto3;
+    # no need to set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in .env
+    # unless you want to override the default profile.
+    rerank_enabled: bool = False
+    aws_region: str = "us-east-1"
+    bedrock_rerank_model_id: str = "cohere.rerank-v3-5:0"
+
     # --- Document processing ---
     chunk_size: int = 500        # Max characters per chunk
     chunk_overlap: int = 50      # Overlap between consecutive chunks

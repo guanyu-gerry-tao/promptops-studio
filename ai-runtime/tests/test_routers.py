@@ -19,6 +19,7 @@ from ai_runtime.dependencies import (
     get_milvus_service,
     get_weaviate_service,
     get_embedding_service,
+    get_rerank_service,
     get_settings,
 )
 from ai_runtime.config import Settings
@@ -50,8 +51,17 @@ def mock_embedding_svc():
 
 
 @pytest.fixture
+def mock_rerank_svc():
+    """Mock RerankService — returns chunks unchanged (pass-through) by default."""
+    svc = Mock()
+    # Default: rerank() returns whatever chunks it receives (no-op)
+    svc.rerank.side_effect = lambda query, chunks, top_n: chunks[:top_n]
+    return svc
+
+
+@pytest.fixture
 def client(fake_settings, mock_doc_service, mock_milvus_svc,
-           mock_weaviate_svc, mock_embedding_svc):
+           mock_weaviate_svc, mock_embedding_svc, mock_rerank_svc):
     """
     FastAPI TestClient with all service dependencies replaced by mocks.
 
@@ -63,6 +73,7 @@ def client(fake_settings, mock_doc_service, mock_milvus_svc,
     app.dependency_overrides[get_milvus_service] = lambda: mock_milvus_svc
     app.dependency_overrides[get_weaviate_service] = lambda: mock_weaviate_svc
     app.dependency_overrides[get_embedding_service] = lambda: mock_embedding_svc
+    app.dependency_overrides[get_rerank_service] = lambda: mock_rerank_svc
 
     with TestClient(app) as c:
         yield c

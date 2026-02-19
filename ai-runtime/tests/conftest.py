@@ -43,6 +43,34 @@ def fake_settings() -> Settings:
 
 
 @pytest.fixture
+def base_settings() -> Settings:
+    """
+    A mutable Settings object for tests that need to tweak individual fields.
+    Unlike fake_settings (which should stay read-only), this is intended to be
+    modified by individual test fixtures (e.g., setting rerank_enabled=True).
+    """
+    return Settings(
+        openai_api_key="test-key-not-real",
+        openai_embedding_model="text-embedding-3-small",
+        openai_chat_model="gpt-4o-mini",
+        milvus_host="localhost",
+        milvus_port=19530,
+        weaviate_host="localhost",
+        weaviate_port=8080,
+        weaviate_alpha=0.5,
+        rerank_top_k=20,
+        rerank_top_n=5,
+        rerank_enabled=False,
+        aws_region="us-east-1",
+        bedrock_rerank_model_id="cohere.rerank-v3-5:0",
+        chunk_size=500,
+        chunk_overlap=50,
+        embedding_dimensions=1536,
+        retrieve_top_k=5,
+    )
+
+
+@pytest.fixture
 def fake_embedding() -> list[float]:
     """
     A fake 1536-dimension embedding vector.

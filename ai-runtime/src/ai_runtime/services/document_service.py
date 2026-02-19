@@ -26,12 +26,12 @@ logger = logging.getLogger(__name__)
 class DocumentService:
     def __init__(
         self,
-        milvus_service: MilvusService,
+        milvus_service: MilvusService | None,   # None = Milvus phased out
         weaviate_service: WeaviateService,
         embedding_service: EmbeddingService,
         settings: Settings,
     ):
-        self.milvus = milvus_service   # dead code — kept for rollback
+        self.milvus = milvus_service   # dead code — kept for rollback, currently None
         self.weaviate = weaviate_service
         self.embedding = embedding_service
 
