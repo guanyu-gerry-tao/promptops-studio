@@ -40,8 +40,9 @@ class RetrieveRequest(BaseModel):
     """Request body for POST /retrieve-document — search the knowledge base."""
     project_id: int
     query: str
-    top_k: int = 5  # Default: return top 5 results
+    top_k: int = 5              # Default: return top 5 results
     generate_answer: bool = True  # Whether to call LLM to generate a final answer
+    alpha: float | None = None  # Hybrid search blend: 0.0=BM25, 1.0=vector, None=use Milvus (pure vector)
 
 
 class ChunkResult(BaseModel):

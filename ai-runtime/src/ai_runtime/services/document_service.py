@@ -2,9 +2,12 @@
 Document processing service.
 
 Orchestrates the full indexing pipeline:
-  Markdown text → split into chunks → generate embeddings → store in Milvus
+  Markdown text → split into chunks → generate embeddings → store in Weaviate
 
-This is the "glue" service that connects EmbeddingService and MilvusService.
+# MILVUS (dead code — kept for rollback):
+# MilvusService parameter is still accepted in __init__ and stored as self.milvus,
+# but insert_chunks and delete_by_doc_id are no longer called.
+# To re-enable: uncomment the Milvus blocks in process_document() and delete_document().
 """
 
 import logging
@@ -13,6 +16,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from ai_runtime.config import Settings
 from ai_runtime.services.milvus_service import MilvusService
+from ai_runtime.services.weaviate_service import WeaviateService
 from ai_runtime.services.embedding_service import EmbeddingService
 from ai_runtime.exceptions import DocumentProcessingError, AIRuntimeError
 
@@ -23,15 +27,13 @@ class DocumentService:
     def __init__(
         self,
         milvus_service: MilvusService,
+        weaviate_service: WeaviateService,
         embedding_service: EmbeddingService,
         settings: Settings,
     ):
-        self.milvus = milvus_service
+        self.milvus = milvus_service   # dead code — kept for rollback
+        self.weaviate = weaviate_service
         self.embedding = embedding_service
-
-        # Text splitter: breaks long text into smaller chunks
-        # Separators are tried in order — it prefers splitting at headers,
-        # then paragraphs, then lines, then words.
 
         # NOTE:
         # separators define where to split the document. starting from ##: markdown second headline.
@@ -49,18 +51,13 @@ class DocumentService:
         content: str,
     ) -> int:
         """
-        Full indexing pipeline for one document.
+        Full indexing pipeline for one document. Dual-writes to Milvus + Weaviate.
 
         Steps:
           1. Split the content into chunks
-          2. Generate embedding vectors for all chunks
-          3. Store chunks + embeddings in Milvus
-
-        Args:
-            project_id: which project this document belongs to
-            doc_id: the document's ID in MySQL
-            title: document title (stored in Milvus for citations)
-            content: full markdown text
+          2. Generate embedding vectors for all chunks (one API call, shared)
+          3. Store chunks + embeddings in Milvus (pure vector, frozen)
+          4. Store chunks + embeddings in Weaviate (hybrid search, new)
 
         Returns:
             Number of chunks created and stored.
@@ -78,29 +75,36 @@ class DocumentService:
                 return 0
             logger.info("Split into %d chunks", len(chunks))
 
-            # Step 2: Embed (may raise EmbeddingError)
+            # Step 2: Embed
             embeddings = self.embedding.embed_texts(chunks)
 
-            # Step 3: Store in Milvus (may raise MilvusError)
             doc_ids = [doc_id] * len(chunks)
             chunk_ids = list(range(len(chunks)))
             titles = [title] * len(chunks)
-            texts = chunks
 
-            self.milvus.insert_chunks(
+            # MILVUS (dead code — kept for rollback):
+            # self.milvus.insert_chunks(
+            #     project_id=project_id, doc_ids=doc_ids, chunk_ids=chunk_ids,
+            #     titles=titles, texts=chunks, embeddings=embeddings,
+            # )
+            # logger.info("Milvus insert complete: %d chunks", len(chunks))
+
+            # Step 3: Store in Weaviate (hybrid search)
+            self.weaviate.insert_chunks(
                 project_id=project_id,
                 doc_ids=doc_ids,
                 chunk_ids=chunk_ids,
                 titles=titles,
-                texts=texts,
+                texts=chunks,
                 embeddings=embeddings,
             )
+            logger.info("Weaviate insert complete: %d chunks", len(chunks))
 
             logger.info("Document processing complete: %d chunks stored", len(chunks))
             return len(chunks)
 
         except AIRuntimeError:
-            # EmbeddingError or MilvusError — already logged, just re-raise
+            # EmbeddingError, MilvusError, WeaviateError — already logged, just re-raise
             raise
 
         except Exception as e:
@@ -113,6 +117,8 @@ class DocumentService:
             ) from e
 
     def delete_document(self, project_id: int, doc_id: int):
-        """Remove all chunks for a document from Milvus (for re-indexing)."""
+        """Remove all chunks for a document from Weaviate."""
         logger.info("Deleting document: project=%d, doc_id=%d", project_id, doc_id)
-        self.milvus.delete_by_doc_id(project_id, doc_id)
+        # MILVUS (dead code — kept for rollback):
+        # self.milvus.delete_by_doc_id(project_id, doc_id)
+        self.weaviate.delete_by_doc_id(project_id, doc_id)

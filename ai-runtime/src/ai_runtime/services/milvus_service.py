@@ -183,6 +183,9 @@ class MilvusService:
               "score": hit.score,
           }
           for hit in hits
+          # note: for each hit, contains top-ks result.
+          # hits: multiple document returns for a single query
+          # hit: every one doc of a top-k result return
       ]
 
     except Exception as e:

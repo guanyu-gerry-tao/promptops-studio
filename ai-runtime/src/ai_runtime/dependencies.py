@@ -18,6 +18,7 @@ from functools import lru_cache
 
 from ai_runtime.config import Settings
 from ai_runtime.services.milvus_service import MilvusService
+from ai_runtime.services.weaviate_service import WeaviateService
 from ai_runtime.services.embedding_service import EmbeddingService
 from ai_runtime.services.document_service import DocumentService
 
@@ -35,8 +36,14 @@ def get_settings() -> Settings:
 
 @lru_cache()
 def get_milvus_service() -> MilvusService:
-    """Singleton MilvusService instance."""
+    """Singleton MilvusService instance (pure vector search, frozen)."""
     return MilvusService(get_settings())
+
+
+@lru_cache()
+def get_weaviate_service() -> WeaviateService:
+    """Singleton WeaviateService instance (hybrid search: vector + BM25)."""
+    return WeaviateService(get_settings())
 
 
 @lru_cache()
@@ -47,9 +54,10 @@ def get_embedding_service() -> EmbeddingService:
 
 @lru_cache()
 def get_document_service() -> DocumentService:
-    """Singleton DocumentService — depends on both Milvus and Embedding services."""
+    """Singleton DocumentService — dual-writes to both Milvus and Weaviate."""
     return DocumentService(
         milvus_service=get_milvus_service(),
+        weaviate_service=get_weaviate_service(),
         embedding_service=get_embedding_service(),
         settings=get_settings(),
     )

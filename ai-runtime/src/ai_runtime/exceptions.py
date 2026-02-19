@@ -48,6 +48,18 @@ class MilvusError(AIRuntimeError):
     pass
 
 
+class WeaviateError(AIRuntimeError):
+    """
+    Raised when a Weaviate operation fails.
+
+    Common causes:
+      - Weaviate server is down / unreachable
+      - Collection creation failed
+      - Insert or hybrid search operation failed
+    """
+    pass
+
+
 class DocumentProcessingError(AIRuntimeError):
     """
     Raised when the document processing pipeline fails.

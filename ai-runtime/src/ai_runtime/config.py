@@ -25,15 +25,22 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"  # 1536 dimensions, cheapest
     openai_chat_model: str = "gpt-4o-mini"               # For generating answers in /retrieve
 
-    # --- Milvus ---
+    # --- Milvus (pure vector search, frozen) ---
     milvus_host: str = "localhost"
     milvus_port: int = 19530
+
+    # --- Weaviate (hybrid search: vector + BM25) ---
+    weaviate_host: str = "localhost"
+    weaviate_port: int = 8080
+    weaviate_alpha: float = 0.5  # 0.0 = pure BM25, 1.0 = pure vector, 0.5 = balanced hybrid
+    rerank_top_k: int = 20       # candidates to fetch before reranking
+    rerank_top_n: int = 5        # results to keep after reranking (≤ rerank_top_k)
 
     # --- Document processing ---
     chunk_size: int = 500        # Max characters per chunk
     chunk_overlap: int = 50      # Overlap between consecutive chunks
     embedding_dimensions: int = 1536  # Must match the embedding model's output
-    retrieve_top_k: int = 5      # Default number of search results
+    retrieve_top_k: int = 5      # Default number of search results (Milvus)
 
     model_config = {
         "env_file": ".env",      # Load variables from this file
