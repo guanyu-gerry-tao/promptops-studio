@@ -34,6 +34,16 @@ milvus/milvus/*
 # OS
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+
+# Git backup
+.git-backup/
+.git-backup
+
+# Weaviate (local persistence)
+weaviate/data/*
+!weaviate/data/.gitkeep
 
 # Logs
 *.log
@@ -44,9 +54,20 @@ Thumbs.db
 .venv/
 
 # Project-specific
-CLAUDE.md
 __pycache__/
 *.pyc
 
 # Internal docs (learning notes, plans) - not for public
 Docs/INTERNAL/
+
+# Mentor Guided Learning system folder
+.LEARNING/
+
+# AI-assistance
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+CLAUDE.backup.md
+
+# INTERNAL
+/INTERNAL/

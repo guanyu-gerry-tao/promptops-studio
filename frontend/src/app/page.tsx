@@ -43,9 +43,15 @@ export default function Dashboard() {
 
       <main className="mx-auto max-w-4xl px-6 py-16 text-center">
         <h2 className="mb-4 text-3xl font-bold text-gray-900">Dashboard</h2>
-        <p className="text-gray-500">
-          This is a placeholder. Project management and other features coming soon.
+        <p className="mb-8 text-gray-500">
+          Welcome to PromptOps Studio. Manage your projects and knowledge bases below.
         </p>
+        <button
+          onClick={() => router.push("/projects")}
+          className="rounded-lg bg-blue-600 px-6 py-3 text-base font-medium text-white hover:bg-blue-700"
+        >
+          Go to Projects →
+        </button>
       </main>
     </div>
   );

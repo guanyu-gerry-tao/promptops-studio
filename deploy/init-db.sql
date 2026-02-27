@@ -79,6 +79,35 @@ CREATE TABLE audit_logs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Audit logs';
 
 -- ==============================================
+-- Table: kb_docs
+-- Description: Knowledge base document metadata.
+--   Stores which documents have been uploaded and
+--   indexed for each project. The actual document
+--   content (chunks + embeddings) lives in Milvus,
+--   not in this table.
+-- ==============================================
+CREATE TABLE kb_docs (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'Document ID',
+    project_id BIGINT NOT NULL COMMENT 'Which project this doc belongs to',
+    title VARCHAR(255) NOT NULL COMMENT 'Document title',
+    content MEDIUMTEXT COMMENT 'Original document content (Markdown)',
+    status VARCHAR(20) DEFAULT 'PENDING' COMMENT 'Index status: PENDING, INDEXING, INDEXED, FAILED',
+    chunks_count INT DEFAULT 0 COMMENT 'Number of chunks created in Milvus',
+    error_message TEXT COMMENT 'Error details if indexing failed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Upload timestamp',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+
+    INDEX idx_project_id (project_id),
+    INDEX idx_status (status),
+
+    CONSTRAINT fk_kbdoc_project
+        FOREIGN KEY (project_id)
+        REFERENCES projects(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Knowledge base documents';
+
+-- ==============================================
 -- Insert test data (for development)
 -- ==============================================
 

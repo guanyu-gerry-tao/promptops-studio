@@ -1,3 +1,6 @@
+server:
+  port: 8081
+
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/promptops
@@ -12,3 +15,8 @@ spring:
 jwt:
   secret: test-secret-key-must-be-at-least-32-bytes-long
   expiration: 86400000
+
+# AI Runtime service (FastAPI)
+# Spring Boot calls these endpoints to index documents and search the knowledge base.
+ai-runtime:
+  base-url: ${AI_RUNTIME_URL:http://localhost:8000}
