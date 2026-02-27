@@ -80,6 +80,7 @@ app.include_router(retrieve_router)
 # Built-in endpoints
 # ──────────────────────────────────────
 
+
 @app.get("/health")
 def health_check():
     """
