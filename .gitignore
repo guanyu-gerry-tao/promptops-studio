@@ -39,6 +39,11 @@ Thumbs.db
 
 # Git backup
 .git-backup/
+.git-backup
+
+# Weaviate (local persistence)
+weaviate/data/*
+!weaviate/data/.gitkeep
 
 # Logs
 *.log

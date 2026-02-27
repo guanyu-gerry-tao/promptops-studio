@@ -6,9 +6,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * Audit Logs entity class.
@@ -38,7 +40,7 @@ public class AuditLogs {
    * Action performed on the resource.
    * Possible values: CREATE, UPDATE, DELETE, LOGIN, LOGOUT.
    */
-  @Column
+  @Column(nullable = false, length = 50)
   private String action;
 
   /**
@@ -58,7 +60,8 @@ public class AuditLogs {
    * Details of the action performed.
    * Written in JSON format.
    */
-  @Column
+  @Column(columnDefinition = "json")
+  @JdbcTypeCode(SqlTypes.JSON)
   private String details;
   //TODO: JSON conversion
 
@@ -78,6 +81,6 @@ public class AuditLogs {
    * Created timestamp - auto-generated on insert.
    */
   @CreationTimestamp
-  @Column(name = "created_at", nullable = false, updatable = false)
-  private LocalDateTime createdAt;
+  @Column(name = "created_at", updatable = false)
+  private Instant createdAt;
 }

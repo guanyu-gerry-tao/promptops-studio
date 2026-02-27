@@ -66,7 +66,7 @@ public class AuditLogsRepositoryTest {
     auditLogs1.setAction("CREATE");
     auditLogs1.setResourceType("PROJECT");
     auditLogs1.setResourceId(321L);
-    auditLogs1.setDetails("Test Project Details");
+    auditLogs1.setDetails("{\"message\":\"Test Project Details\"}");
     auditLogs1.setIpAddress("127.0.0.1");
     auditLogs1.setUserAgent("Test User Agent");
 
@@ -75,7 +75,7 @@ public class AuditLogsRepositoryTest {
     auditLogs2.setAction("UPDATE");
     auditLogs2.setResourceType("PROJECT");
     auditLogs2.setResourceId(321L);
-    auditLogs2.setDetails("Updated Project Details");
+    auditLogs2.setDetails("{\"message\":\"Updated Project Details\"}");
     auditLogs2.setIpAddress("127.0.0.1");
     auditLogs2.setUserAgent("Test User Agent");
 
@@ -84,7 +84,7 @@ public class AuditLogsRepositoryTest {
     auditLogs3.setAction("CREATE");
     auditLogs3.setResourceType("USER");
     auditLogs3.setResourceId(user2Id);
-    auditLogs3.setDetails("Test User Details");
+    auditLogs3.setDetails("{\"message\":\"Test User Details\"}");
     auditLogs3.setIpAddress("127.0.0.1");
     auditLogs3.setUserAgent("Test User Agent");
 

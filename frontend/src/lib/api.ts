@@ -82,3 +82,78 @@ export async function register(username: string, email: string, password: string
     body: JSON.stringify({ username, email, password, displayName }),
   });
 }
+
+// --- Projects ---
+
+export interface Project {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export async function listProjects(): Promise<Project[]> {
+  return apiFetch("/projects");
+}
+
+export async function createProject(name: string, description?: string): Promise<Project> {
+  return apiFetch("/projects", {
+    method: "POST",
+    body: JSON.stringify({ name, description }),
+  });
+}
+
+// --- Knowledge Base ---
+
+export interface KbDoc {
+  id: number;
+  projectId: number;
+  title: string;
+  status: string;        // "INDEXING" | "INDEXED" | "FAILED"
+  chunksCount: number;
+  errorMessage?: string;
+}
+
+export interface ChunkResult {
+  doc_id: number;
+  chunk_id: number;
+  text: string;
+  score: number;
+  title: string;
+}
+
+export interface SearchResult {
+  project_id: number;
+  query: string;
+  results: ChunkResult[];
+  answer?: string;
+}
+
+export async function uploadDoc(projectId: number, title: string, content: string): Promise<KbDoc> {
+  return apiFetch(`/projects/${projectId}/kb/docs`, {
+    method: "POST",
+    body: JSON.stringify({ title, content }),
+  });
+}
+
+export async function listDocs(projectId: number): Promise<KbDoc[]> {
+  return apiFetch(`/projects/${projectId}/kb/docs`);
+}
+
+export async function deleteDoc(projectId: number, docId: number): Promise<void> {
+  return apiFetch(`/projects/${projectId}/kb/docs/${docId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function searchKb(
+  projectId: number,
+  query: string,
+  topK: number = 5,
+  alpha?: number,
+  generateAnswer: boolean = false,
+): Promise<SearchResult> {
+  return apiFetch(`/projects/${projectId}/kb/search`, {
+    method: "POST",
+    body: JSON.stringify({ query, top_k: topK, alpha, generate_answer: generateAnswer }),
+  });
+}
