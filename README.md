@@ -60,7 +60,24 @@ Default test accounts created by seed data:
 | `admin` | `password` | Admin |
 | `testuser` | `password` | User |
 
-## Service Setup & Run
+## Quick Start
+
+Each service has a `start.sh` that automatically starts its Docker dependencies, waits for readiness, and launches the dev server:
+
+```bash
+# Terminal 1 — Platform API (starts MySQL + Redis automatically)
+cd platform-api && ./start.sh
+
+# Terminal 2 — AI Runtime (starts Weaviate automatically)
+cd ai-runtime && ./start.sh
+
+# Terminal 3 — Frontend (no external dependencies)
+cd frontend && ./start.sh
+```
+
+> **Note**: Make sure Docker Desktop is running before executing the scripts. If you get permission errors, run `chmod +x frontend/start.sh platform-api/start.sh ai-runtime/start.sh` first.
+
+## Service Setup & Run (Manual)
 
 ### Frontend (`frontend/`)
 
