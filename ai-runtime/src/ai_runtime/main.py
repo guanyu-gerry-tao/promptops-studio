@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from ai_runtime.routers.index_router import router as index_router
 from ai_runtime.routers.retrieve_router import router as retrieve_router
+from ai_runtime.routers.execute_router import router as execute_router
 from ai_runtime.exceptions import AIRuntimeError, EmbeddingError, MilvusError
 
 # Configure logging for the whole application
@@ -74,6 +75,7 @@ async def ai_runtime_error_handler(request: Request, exc: AIRuntimeError):
 
 app.include_router(index_router)
 app.include_router(retrieve_router)
+app.include_router(execute_router)
 
 
 # ──────────────────────────────────────
