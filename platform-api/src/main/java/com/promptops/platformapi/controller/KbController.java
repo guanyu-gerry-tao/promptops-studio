@@ -90,7 +90,7 @@ public class KbController {
             @PathVariable Long projectId,
             @Valid @RequestBody KbSearchRequest request) {
         Map<String, Object> result = kbDocService.search(
-                projectId, request.getQuery(), request.getTopK(), request.getGenerateAnswer());
+                projectId, request.getQuery(), request.getTopK(), request.getGenerateAnswer(), request.getAlpha());
         return ResponseEntity.ok(result);
     }
 }

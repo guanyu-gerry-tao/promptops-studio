@@ -40,6 +40,8 @@ public interface KbDocService {
     /**
      * Search the knowledge base via ai-runtime POST /retrieve.
      * Returns the raw response from ai-runtime as a Map.
+     *
+     * @param alpha hybrid search blend: 0.0=pure BM25, 1.0=pure vector, null=default (0.5)
      */
-    Map<String, Object> search(Long projectId, String query, Integer topK, Boolean generateAnswer);
+    Map<String, Object> search(Long projectId, String query, Integer topK, Boolean generateAnswer, Double alpha);
 }
