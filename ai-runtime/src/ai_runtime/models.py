@@ -60,3 +60,38 @@ class RetrieveResponse(BaseModel):
     query: str
     results: list[ChunkResult]
     answer: str | None = None  # Optional LLM-generated answer
+
+
+# ──────────────────────────────────────
+# /execute-case endpoint
+# ──────────────────────────────────────
+
+class ExecuteCaseRequest(BaseModel):
+    """Request body for POST /execute-case — run a single case through a workflow."""
+    project_id: int
+    workflow_id: str            # Template identifier, e.g. "rag_json"
+    case_id: str                # Unique identifier for this test case
+    user_input: str             # The user query / test input
+    schema_id: str | None = None  # Optional JSON Schema name for output validation
+
+
+class TraceRecord(BaseModel):
+    """One node's execution record in the workflow trace."""
+    node_name: str
+    input_summary: str          # Abbreviated input for this node
+    output_summary: str         # Abbreviated output from this node
+    latency_ms: int             # Time spent in this node
+    token_count: int | None = None  # Token usage (if applicable)
+    citations: list[str] | None = None  # Source document titles cited
+
+
+class ExecuteCaseResponse(BaseModel):
+    """Response body for POST /execute-case."""
+    project_id: int
+    workflow_id: str
+    case_id: str
+    status: str                 # "SUCCESS" or "FAILED"
+    output_json: dict | None = None  # The structured JSON output from the workflow
+    error_message: str | None = None
+    trace: list[TraceRecord]    # Node-level execution trace
+    citations: list[str]        # Aggregated source titles

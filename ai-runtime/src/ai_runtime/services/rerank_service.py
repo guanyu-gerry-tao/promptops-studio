@@ -22,14 +22,13 @@ Flow:
 """
 
 import json
-import logging
+from loguru import logger
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
 from ai_runtime.config import Settings
 from ai_runtime.exceptions import RerankError
 
-logger = logging.getLogger(__name__)
 
 
 class RerankService:

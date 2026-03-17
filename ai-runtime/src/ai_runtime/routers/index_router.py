@@ -9,7 +9,7 @@ are NOT caught here — they bubble up to the global exception handlers
 in main.py, which return clean JSON error responses.
 """
 
-import logging
+from loguru import logger
 
 from fastapi import APIRouter, Depends
 
@@ -17,7 +17,6 @@ from ai_runtime.models import IndexRequest, IndexResponse
 from ai_runtime.services.document_service import DocumentService
 from ai_runtime.dependencies import get_document_service
 
-logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["indexing"])
 

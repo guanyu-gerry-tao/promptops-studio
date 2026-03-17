@@ -9,7 +9,7 @@ alpha controls the blend: 0.0 = pure keyword, 1.0 = pure vector, default = 0.5.
 # but not injected here. To re-enable: add the Depends parameter back.
 """
 
-import logging
+from loguru import logger
 
 import openai
 from fastapi import APIRouter, Depends
@@ -26,7 +26,6 @@ from ai_runtime.dependencies import (
     get_settings,
 )
 
-logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["retrieval"])
 

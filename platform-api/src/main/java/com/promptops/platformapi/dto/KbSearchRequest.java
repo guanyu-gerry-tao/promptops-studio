@@ -23,4 +23,11 @@ public class KbSearchRequest {
      * Defaults to true if not specified.
      */
     private Boolean generateAnswer;
+
+    /**
+     * Hybrid search blend ratio for Weaviate.
+     * 0.0 = pure BM25 keyword, 1.0 = pure vector semantic.
+     * Defaults to 0.5 (balanced) if not specified.
+     */
+    private Double alpha;
 }

@@ -4,23 +4,22 @@ AI Runtime Service - Main Application
 FastAPI application for AI workflow execution and knowledge base management.
 """
 
-import logging
+import sys
 from datetime import datetime
+
+from loguru import logger
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from ai_runtime.routers.index_router import router as index_router
 from ai_runtime.routers.retrieve_router import router as retrieve_router
+from ai_runtime.routers.execute_router import router as execute_router
 from ai_runtime.exceptions import AIRuntimeError, EmbeddingError, MilvusError
 
-# Configure logging for the whole application
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
-)
-
-logger = logging.getLogger(__name__)
+# Configure Loguru: remove default handler, add JSON sink to stdout
+logger.remove()
+logger.add(sys.stdout, serialize=True, level="INFO")
 
 # Create FastAPI application instance
 app = FastAPI(
@@ -74,6 +73,7 @@ async def ai_runtime_error_handler(request: Request, exc: AIRuntimeError):
 
 app.include_router(index_router)
 app.include_router(retrieve_router)
+app.include_router(execute_router)
 
 
 # ──────────────────────────────────────

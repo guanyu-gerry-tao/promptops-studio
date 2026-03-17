@@ -8,7 +8,7 @@ An AI application testing and evaluation platform. Users can upload knowledge ba
 |---|---|
 | Frontend | Next.js 16 + React 19 + TypeScript + Tailwind CSS v4 |
 | Platform API | Java 17 + Spring Boot 4 + Gradle |
-| AI Runtime | Python 3.13 + FastAPI + LangChain + Poetry |
+| AI Runtime | Python 3.13 + FastAPI + LangChain + LangGraph + Poetry |
 | Vector DB | Weaviate (hybrid search: vector + BM25 + Reranking) |
 | Relational DB | MySQL 8 |
 | Cache | Redis 7 |
@@ -60,7 +60,24 @@ Default test accounts created by seed data:
 | `admin` | `password` | Admin |
 | `testuser` | `password` | User |
 
-## Service Setup & Run
+## Quick Start
+
+Each service has a `start.sh` that automatically starts its Docker dependencies, waits for readiness, and launches the dev server:
+
+```bash
+# Terminal 1 — Platform API (starts MySQL + Redis automatically)
+cd platform-api && ./start.sh
+
+# Terminal 2 — AI Runtime (starts Weaviate automatically)
+cd ai-runtime && ./start.sh
+
+# Terminal 3 — Frontend (no external dependencies)
+cd frontend && ./start.sh
+```
+
+> **Note**: Make sure Docker Desktop is running before executing the scripts. If you get permission errors, run `chmod +x frontend/start.sh platform-api/start.sh ai-runtime/start.sh` first.
+
+## Service Setup & Run (Manual)
 
 ### Frontend (`frontend/`)
 
@@ -160,6 +177,8 @@ poetry run pytest
 
 All tests use mocks — no live OpenAI or Weaviate connection required.
 
+> **Logging**: AI Runtime uses [Loguru](https://github.com/Delgan/loguru) with `serialize=True` — all application logs are emitted as JSON to stdout, making them compatible with log aggregation tools (Loki, ELK, etc.).
+
 ## Key API Endpoints
 
 ### Platform API (`http://localhost:8081`)
@@ -170,8 +189,9 @@ All tests use mocks — no live OpenAI or Weaviate connection required.
 | `POST` | `/auth/login` | Login, returns JWT |
 | `GET` | `/projects` | List projects |
 | `POST` | `/projects` | Create project |
-| `POST` | `/projects/{id}/kb/docs` | Upload KB document |
+| `POST` | `/projects/{id}/kb/docs` | Upload KB document metadata |
 | `POST` | `/projects/{id}/kb/index` | Trigger indexing via AI Runtime |
+| `POST` | `/projects/{id}/kb/search` | Hybrid search with optional `alpha` (0.0=BM25, 1.0=vector) |
 
 ### AI Runtime (`http://localhost:8000`)
 
@@ -179,7 +199,8 @@ All tests use mocks — no live OpenAI or Weaviate connection required.
 |---|---|---|
 | `GET` | `/health` | Health check |
 | `POST` | `/index-document` | Chunk, embed, and store a document in Weaviate |
-| `POST` | `/retrieve-document` | Hybrid search + optional rerank + LLM answer |
+| `POST` | `/retrieve-document` | Hybrid search + optional Cohere rerank + LLM answer |
+| `POST` | `/execute-case` | Run a single test case through a LangGraph workflow (Milestone 4) |
 
 ## Environment File Reference
 

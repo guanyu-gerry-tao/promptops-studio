@@ -8,7 +8,7 @@ Handles:
   - Deleting chunks when a document is re-indexed
 """
 
-import logging
+from loguru import logger
 
 from pymilvus import (
   connections,
@@ -22,7 +22,6 @@ from pymilvus import (
 from ai_runtime.config import Settings
 from ai_runtime.exceptions import MilvusError
 
-logger = logging.getLogger(__name__)
 
 
 class MilvusService:

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.net.http.HttpClient;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -142,20 +143,23 @@ public class KbDocServiceImpl implements KbDocService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, Object> search(Long projectId, String query, Integer topK, Boolean generateAnswer) {
+    public Map<String, Object> search(Long projectId, String query, Integer topK, Boolean generateAnswer, Double alpha) {
         // Verify project exists
         projectRepository.findById(projectId)
                 .orElseThrow(() -> new BusinessException(
                         HttpStatus.NOT_FOUND, "Project not found with id: " + projectId));
 
-        log.info("Searching KB for project={}, query='{}'", projectId, query);
+        log.info("Searching KB for project={}, query='{}', alpha={}", projectId, query, alpha);
 
-        Map<String, Object> requestBody = Map.of(
-                "project_id", projectId,
-                "query", query,
-                "top_k", topK != null ? topK : 5,
-                "generate_answer", generateAnswer != null ? generateAnswer : true
-        );
+        // Use HashMap instead of Map.of() because alpha may be null
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("project_id", projectId);
+        requestBody.put("query", query);
+        requestBody.put("top_k", topK != null ? topK : 5);
+        requestBody.put("generate_answer", generateAnswer != null ? generateAnswer : true);
+        if (alpha != null) {
+            requestBody.put("alpha", alpha);
+        }
 
         try {
             Map<String, Object> response = restClient.post()
