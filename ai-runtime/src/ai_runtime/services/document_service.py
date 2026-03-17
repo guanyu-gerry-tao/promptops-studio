@@ -10,7 +10,7 @@ Orchestrates the full indexing pipeline:
 # To re-enable: uncomment the Milvus blocks in process_document() and delete_document().
 """
 
-import logging
+from loguru import logger
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -20,7 +20,6 @@ from ai_runtime.services.weaviate_service import WeaviateService
 from ai_runtime.services.embedding_service import EmbeddingService
 from ai_runtime.exceptions import DocumentProcessingError, AIRuntimeError
 
-logger = logging.getLogger(__name__)
 
 
 class DocumentService:

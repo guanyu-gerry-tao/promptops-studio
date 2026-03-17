@@ -5,7 +5,7 @@ Runs a single test case through a LangGraph workflow and returns
 the structured output along with a node-level execution trace.
 """
 
-import logging
+from loguru import logger
 
 from fastapi import APIRouter, Depends
 
@@ -26,7 +26,6 @@ from ai_runtime.dependencies import (
 )
 from ai_runtime.workflow.graph import build_rag_workflow
 
-logger = logging.getLogger(__name__)
 
 # a APIRouter can be thought of as a "sub-application" that defines a group of related endpoints.
 # at the main.py, we can invoke app.include_router(router) to register these endpoints under the main FastAPI app.

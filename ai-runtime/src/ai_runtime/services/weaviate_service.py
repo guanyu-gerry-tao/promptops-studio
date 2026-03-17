@@ -15,7 +15,7 @@ named "Kb{project_id}" (e.g., Kb1, Kb4). Weaviate requires class names
 to start with an uppercase letter.
 """
 
-import logging
+from loguru import logger
 
 import weaviate
 import weaviate.classes as wvc
@@ -24,7 +24,6 @@ from weaviate.classes.query import HybridFusion
 from ai_runtime.config import Settings
 from ai_runtime.exceptions import WeaviateError
 
-logger = logging.getLogger(__name__)
 
 
 class WeaviateService:

@@ -6,14 +6,13 @@ These vectors capture the "meaning" of the text — similar texts produce
 similar vectors, which enables semantic search in Milvus.
 """
 
-import logging
+from loguru import logger
 
 import openai
 
 from ai_runtime.config import Settings
 from ai_runtime.exceptions import EmbeddingError
 
-logger = logging.getLogger(__name__)
 
 
 class EmbeddingService:

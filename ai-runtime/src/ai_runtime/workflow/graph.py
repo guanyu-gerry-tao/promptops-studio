@@ -21,7 +21,7 @@ LangGraph merges the returned dict into the existing state automatically.
 """
 
 import json
-import logging
+from loguru import logger
 import time
 
 import jsonschema
@@ -34,7 +34,6 @@ from ai_runtime.services.weaviate_service import WeaviateService
 from ai_runtime.services.rerank_service import RerankService
 from ai_runtime.workflow.state import WorkflowState, TraceEntry
 
-logger = logging.getLogger(__name__)
 
 # Maximum number of repair attempts before giving up
 MAX_REPAIR_ATTEMPTS = 2
