@@ -38,7 +38,7 @@
   - 前端页面（已从 ICE.js 迁移到 Next.js）
     - [x] 登录/注册页面
     - [x] Dashboard 占位页面（Project 管理后续迭代）
-- [ ] **Milestone 3: AI Runtime 与知识库闭环** (Week 5-6) 🔄 进行中
+- [x] **Milestone 3: AI Runtime 与知识库闭环** (Week 5-6) ✅ 已完成
   - AI Runtime 核心链路
     - [x] EmbeddingService（OpenAI text-embedding-3-small）
     - [x] DocumentService（切块 + embedding + 存储编排）
@@ -46,11 +46,15 @@
     - [x] Pydantic 请求/响应模型
     - [x] 端到端验证通过（index → retrieve → LLM 回答）
     - [x] 自定义异常体系 + 全局异常处理器（类似 Spring @ControllerAdvice）
-    - [x] 结构化 logging（所有 service + router）
-  - TODO（后续）
-    - [ ] Docker 部署时日志持久化（方案：stdout → Docker logs 自动存储，无需改代码）
-    - [ ] Platform API 对接（上传 KB 文档 → 调用 AI Runtime /index）
-    - [ ] 前端知识库页面（上传文档、检索调试）
+    - [x] 结构化 JSON 日志（Loguru，serialize=True 输出到 stdout，替换所有 service/router 的标准 logging）
+    - [x] Docker 部署日志持久化（stdout → Docker logs 自动收集，无需改代码）
+  - Platform API 对接
+    - [x] Platform API 对接（上传 KB 文档 → 调用 AI Runtime /index）
+    - [x] kb_docs 表落库，与 projects 关联
+    - [x] alpha 参数全链路串联（前端 slider → Platform API → ai-runtime）
+  - 前端知识库页面
+    - [x] 上传文档、查看索引状态（INDEXED / FAILED）
+    - [x] 检索调试面板（alpha 滑动条 0.0~1.0，Top K 调整，结果 + 相似度分数）
   - 🆕 检索升级（混合搜索 + Reranking）— 技术选型：Weaviate
     - [x] **引入 Weaviate（docker-compose 新增服务）**
       - docker-compose 新增 `weaviate` 容器（单机模式，端口 8080）
@@ -71,13 +75,12 @@
       - 新增配置项：`rerank_enabled`（feature flag）、`rerank_top_k`、`rerank_top_n`、`aws_region`
       - 接入 `retrieve_router.py`：hybrid search → rerank → LLM 三段管道
       - 6 个单元测试，全部通过；55 个测试全绿
-    - [ ] **前端检索调试面板（alpha 调参）**
+    - [x] **前端检索调试面板（alpha 调参）**
       - 知识库页面新增"检索调试"区块
       - 提供滑动条调整 `alpha` 值（0.0 ~ 1.0，步长 0.1）
       - 实时展示不同 alpha 下的召回结果列表（文档片段 + 相似度分数）
-      - 对比展示 Reranking 前 / 后的结果排序变化
       - 方便开发人员找到当前业务场景的最优混合比例
-- [ ] **Milestone 4: Workflow & LangGraph Trace** (Week 7) ⏳ 未开始
+- [ ] **Milestone 4: Workflow & LangGraph Trace** (Week 7) 🔄 进行中
 - [ ] **Milestone 5: Kafka 异步 Run & Dataset** (Week 8) ⏳ 未开始
 
 ---
