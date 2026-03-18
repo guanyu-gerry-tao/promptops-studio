@@ -2,6 +2,29 @@
 
 A full-stack platform for testing and evaluating AI applications — upload knowledge base documents, design RAG workflows, run batch evaluations asynchronously, and inspect node-level execution traces and audit logs.
 
+> **This project is under active development.** Current progress at a glance:
+>
+> | Milestone | Status |
+> |-----------|--------|
+> | 1 — Infrastructure & Scaffolding | Done |
+> | 2 — Auth & Project Management | Done |
+> | 3 — AI Runtime & Knowledge Base | Nearly Done |
+> | 4 — Workflow & LangGraph Trace | In Progress |
+> | 5 — Kafka Async Run & Dataset | Not Started |
+>
+> Full breakdown: [`Docs/plan-CN.md`](Docs/plan-CN.md)
+
+## Quick Navigation
+
+| Path | What's Inside |
+|------|---------------|
+| [`frontend/`](frontend/) | Next.js web UI (React, TypeScript, Tailwind CSS) |
+| [`platform-api/`](platform-api/) | Spring Boot REST API (Java 17, Gradle) |
+| [`ai-runtime/`](ai-runtime/) | FastAPI AI service (LangChain, LangGraph, Poetry) |
+| [`deploy/init-db.sql`](deploy/init-db.sql) | MySQL schema & seed data |
+| [`docker-compose.yml`](docker-compose.yml) | Infrastructure (MySQL, Redis, Weaviate) |
+| [`Docs/plan-CN.md`](Docs/plan-CN.md) | Project plan & milestone tracker (中文) |
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -14,20 +37,6 @@ A full-stack platform for testing and evaluating AI applications — upload know
 | Cache | Redis 7 |
 | Message Queue | Kafka (async run execution) |
 | DevOps | Docker + docker-compose |
-
-## Project Structure
-
-```
-promptops-studio/
-├── frontend/               # Next.js web UI
-├── platform-api/           # Spring Boot REST API
-├── ai-runtime/             # FastAPI + LangChain AI service
-├── deploy/
-│   └── init-db.sql         # MySQL schema + seed data
-├── docker-compose.yml      # MySQL, Redis, Weaviate
-└── Docs/
-    └── plan-CN.md          # Full project plan and milestone tracker
-```
 
 ## Prerequisites
 
