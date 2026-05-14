@@ -234,6 +234,64 @@ class TestRetrieveEndpoint:
 
 
 # ──────────────────────────────────────
+# POST /execute-case
+# ──────────────────────────────────────
+
+class TestExecuteCaseEndpoint:
+    """Tests for POST /execute-case."""
+
+    @patch("ai_runtime.workflow.graph.openai.OpenAI")
+    def test_execute_case_returns_output_trace_and_citations(
+        self,
+        mock_openai_class,
+        client,
+        mock_embedding_svc,
+        mock_weaviate_svc,
+        mock_rerank_svc,
+    ):
+        """Happy path: one case runs through the LangGraph workflow."""
+        mock_embedding_svc.embed_single.return_value = [0.1] * 1536
+        mock_weaviate_svc.hybrid_search.return_value = [
+            {
+                "doc_id": 10,
+                "chunk_id": 1,
+                "title": "Refund Policy",
+                "text": "Refunds are available within 30 days.",
+                "score": 0.92,
+            }
+        ]
+        mock_rerank_svc.rerank.side_effect = lambda query, chunks, top_n: chunks[:top_n]
+
+        mock_response = Mock()
+        mock_response.choices = [
+            Mock(message=Mock(content='{"answer":"Refunds are available within 30 days.","confidence":0.9,"sources":["Refund Policy"]}'))
+        ]
+        mock_response.usage = Mock(total_tokens=42)
+        mock_openai_class.return_value.chat.completions.create.return_value = mock_response
+
+        response = client.post("/execute-case", json={
+            "project_id": 1,
+            "workflow_id": "rag_json",
+            "case_id": "case-1",
+            "user_input": "What is the refund window?",
+            "schema_id": "qa_answer",
+        })
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "SUCCESS"
+        assert data["output_json"]["answer"] == "Refunds are available within 30 days."
+        assert data["citations"] == ["Refund Policy"]
+        assert [item["node_name"] for item in data["trace"]] == [
+            "route_intent",
+            "retrieve_kb",
+            "generate_json",
+            "validate_schema",
+            "finalize",
+        ]
+
+
+# ──────────────────────────────────────
 # Built-in endpoints
 # ──────────────────────────────────────
 

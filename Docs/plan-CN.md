@@ -80,7 +80,12 @@
       - 提供滑动条调整 `alpha` 值（0.0 ~ 1.0，步长 0.1）
       - 实时展示不同 alpha 下的召回结果列表（文档片段 + 相似度分数）
       - 方便开发人员找到当前业务场景的最优混合比例
-- [ ] **Milestone 4: Workflow & LangGraph Trace** (Week 7) 🔄 进行中
+- [x] **Milestone 4: Workflow & LangGraph Trace** (Week 7) ✅ 已完成
+  - [x] AI Runtime 单条 Workflow 执行链路（`POST /execute-case`）
+  - [x] LangGraph RAG + JSON 模板，返回节点级 trace
+  - [x] Platform API workflow/run/run_trace 基础表结构与单 case 执行封装
+  - [x] 前端 Workflow 页面：创建模板、输入 case、展示 output JSON + trace
+  - [x] 测试验证：AI Runtime 56 个 pytest 全绿，Platform API Gradle 全测通过，前端 lint/build 通过
 - [ ] **Milestone 5: Kafka 异步 Run & Dataset** (Week 8) ⏳ 未开始
 
 ---
@@ -422,22 +427,23 @@ GitHub Actions：
 - 从前端上传一份 Markdown 文档后，可以在页面输入 query，看到 Weaviate 混合检索出的片段与来源
 - 日志中可以追踪一次完整的"上传 doc → 索引 → 检索"的链路
 
-### **Milestone 4：Workflow & LangGraph Trace（第 7 周）**
+### **Milestone 4：Workflow & LangGraph Trace（第 7 周）** ✅ 已完成
 
 - Workflow 单条执行链路
-    - 使用 LangGraph/LangChain 实现一个单 case Workflow（Template A：RAG + JSON 输出）
-    - 实现统一 State 结构（`project_id`、`run_id`、`case_id`、`retrieved_chunks[]`、`final_output_json`、`trace[]` 等）
-    - 返回节点级 trace（包含 node 名称、输入输出摘要、latency 等）
+    - [x] 使用 LangGraph/LangChain 实现一个单 case Workflow（Template A：RAG + JSON 输出）
+    - [x] 实现统一 State 结构（`project_id`、`case_id`、`retrieved_chunks[]`、`final_output_json`、`trace[]` 等）
+    - [x] 返回节点级 trace（包含 node 名称、输入输出摘要、latency、token、citations 等）
 - Platform API 集成
-    - 增加 `workflows`、`runs` 的基本表结构与 CRUD（先支持单条 case）
-    - 提供 `POST /execute-case` 封装单条 Workflow 调用
+    - [x] 增加 `workflows`、`runs`、`run_traces` 的基本表结构（先支持单条 case）
+    - [x] 提供 `POST /projects/{projectId}/execute-case` 封装单条 Workflow 调用
+    - [x] 提供 workflow 创建/列表、run 列表/详情接口
 - 前端展示
-    - 简单 Workflow 配置 / 详情页
-    - Run Detail 页面展示单条 case 的 output + trace
+    - [x] 简单 Workflow 配置 / 详情页
+    - [x] Run Detail 页面展示单条 case 的 output + trace
 
 验收：
-- 在 UI 中选定 Project + Workflow，输入一个 case，能得到结构化 JSON 输出和节点 trace
-- 数据库中能查到相应的 run、run_traces 记录
+- [x] 在 UI 中选定 Project + Workflow，输入一个 case，能得到结构化 JSON 输出和节点 trace
+- [x] 数据库中能查到相应的 run、run_traces 记录
 
 ### **Milestone 5：Kafka 异步 Run & Dataset（第 8 周）**
 

@@ -157,3 +157,72 @@ export async function searchKb(
     body: JSON.stringify({ query, top_k: topK, alpha, generate_answer: generateAnswer }),
   });
 }
+
+// --- Workflow / Runs ---
+
+export interface Workflow {
+  id: number;
+  projectId: number;
+  name: string;
+  templateId: string;
+  configJson?: string;
+  status?: string;
+}
+
+export interface RunTrace {
+  id?: number;
+  runId?: number;
+  caseId: string;
+  nodeName: string;
+  inputSummary?: string;
+  outputSummary?: string;
+  latencyMs?: number;
+  tokenCount?: number;
+  citationsJson?: string;
+}
+
+export interface Run {
+  id: number;
+  projectId: number;
+  workflowId: number;
+  caseId: string;
+  userInput?: string;
+  status: string;
+  outputJson?: string;
+  citationsJson?: string;
+  errorMessage?: string;
+  traces?: RunTrace[];
+}
+
+export async function listWorkflows(projectId: number): Promise<Workflow[]> {
+  return apiFetch(`/projects/${projectId}/workflows`);
+}
+
+export async function createWorkflow(
+  projectId: number,
+  name: string,
+  templateId: string = "rag_json",
+  schemaId: string = "qa_answer",
+): Promise<Workflow> {
+  return apiFetch(`/projects/${projectId}/workflows`, {
+    method: "POST",
+    body: JSON.stringify({ name, templateId, schemaId }),
+  });
+}
+
+export async function executeCase(
+  projectId: number,
+  workflowId: number,
+  caseId: string,
+  userInput: string,
+  schemaId: string = "qa_answer",
+): Promise<Run> {
+  return apiFetch(`/projects/${projectId}/execute-case`, {
+    method: "POST",
+    body: JSON.stringify({ workflowId, caseId, userInput, schemaId }),
+  });
+}
+
+export async function listRuns(projectId: number): Promise<Run[]> {
+  return apiFetch(`/projects/${projectId}/runs`);
+}
