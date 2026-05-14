@@ -159,6 +159,12 @@ export default function ProjectsPage() {
                   >
                     Workflow →
                   </button>
+                  <button
+                    onClick={() => router.push(`/projects/${p.id}/runs`)}
+                    className="rounded bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800"
+                  >
+                    Runs →
+                  </button>
                 </div>
               </li>
             ))}

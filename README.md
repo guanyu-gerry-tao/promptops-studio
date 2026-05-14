@@ -24,7 +24,7 @@ promptops-studio/
 ├── ai-runtime/             # FastAPI + LangChain AI service
 ├── deploy/
 │   └── init-db.sql         # MySQL schema + seed data
-├── docker-compose.yml      # MySQL, Redis, Weaviate
+├── docker-compose.yml      # MySQL, Redis, Weaviate, Kafka
 └── Docs/
     └── plan-CN.md          # Full project plan and milestone tracker
 ```
@@ -41,7 +41,7 @@ Install these tools before starting:
 
 ## Infrastructure Setup
 
-Start all backing services (MySQL, Redis, Weaviate) with a single command:
+Start all backing services (MySQL, Redis, Weaviate, Kafka) with a single command:
 
 ```bash
 docker compose up -d
@@ -195,8 +195,15 @@ All tests use mocks — no live OpenAI or Weaviate connection required.
 | `GET` | `/projects/{id}/workflows` | List workflow templates for a project |
 | `POST` | `/projects/{id}/workflows` | Create a workflow from a template |
 | `POST` | `/projects/{id}/execute-case` | Run one workflow case and persist output + trace |
+| `POST` | `/projects/{id}/datasets` | Upload a JSONL dataset for batch evaluation |
+| `GET` | `/projects/{id}/datasets` | List datasets for a project |
+| `POST` | `/projects/{id}/runs` | Start a dataset-based batch run |
 | `GET` | `/projects/{id}/runs` | List workflow runs for a project |
 | `GET` | `/runs/{runId}` | Fetch one run with node-level trace records |
+| `GET` | `/runs/{runId}/cases` | List case-level results for a batch run |
+| `GET` | `/runs/{runId}/case/{caseId}` | Fetch one case-level result |
+
+> **Milestone 5 note**: The Platform API now defines and logs a Kafka-ready `run.requested` event payload and Docker Compose includes Kafka. For local demo stability, batch runs currently execute through a synchronous fallback inside Platform API; the next production hardening step is moving that same payload into a real Kafka producer/consumer worker.
 
 ### AI Runtime (`http://localhost:8000`)
 
@@ -246,3 +253,8 @@ The `docker compose up -d` containers are not running. Check with `docker ps`.
 
 **Weaviate connection error in AI Runtime**
 Weaviate must be running (`docker compose up -d`). Confirm with `curl http://localhost:8080/v1/.well-known/ready`.
+
+## Demo and Resume Notes
+
+- `Docs/happy-path-demo-script-CN.md` contains a 3-5 minute demo path for the current happy path.
+- `Docs/resume-project-descriptions.md` contains 10 bilingual project descriptions for resume and interview reuse.

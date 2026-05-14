@@ -172,7 +172,7 @@ export interface Workflow {
 export interface RunTrace {
   id?: number;
   runId?: number;
-  caseId: string;
+  caseId?: string;
   nodeName: string;
   inputSummary?: string;
   outputSummary?: string;
@@ -185,13 +185,36 @@ export interface Run {
   id: number;
   projectId: number;
   workflowId: number;
+  datasetId?: number;
   caseId: string;
   userInput?: string;
   status: string;
+  totalCases?: number;
+  successCases?: number;
+  failedCases?: number;
   outputJson?: string;
   citationsJson?: string;
   errorMessage?: string;
   traces?: RunTrace[];
+}
+
+export interface Dataset {
+  id: number;
+  projectId: number;
+  name: string;
+  itemsCount: number;
+  status?: string;
+}
+
+export interface RunCase {
+  id: number;
+  runId: number;
+  caseId: string;
+  inputText?: string;
+  status: string;
+  outputJson?: string;
+  citationsJson?: string;
+  errorMessage?: string;
 }
 
 export async function listWorkflows(projectId: number): Promise<Workflow[]> {
@@ -225,4 +248,35 @@ export async function executeCase(
 
 export async function listRuns(projectId: number): Promise<Run[]> {
   return apiFetch(`/projects/${projectId}/runs`);
+}
+
+export async function createDataset(
+  projectId: number,
+  name: string,
+  content: string,
+): Promise<Dataset> {
+  return apiFetch(`/projects/${projectId}/datasets`, {
+    method: "POST",
+    body: JSON.stringify({ name, content }),
+  });
+}
+
+export async function listDatasets(projectId: number): Promise<Dataset[]> {
+  return apiFetch(`/projects/${projectId}/datasets`);
+}
+
+export async function startRun(
+  projectId: number,
+  workflowId: number,
+  datasetId: number,
+  schemaId: string = "qa_answer",
+): Promise<Run> {
+  return apiFetch(`/projects/${projectId}/runs`, {
+    method: "POST",
+    body: JSON.stringify({ workflowId, datasetId, schemaId }),
+  });
+}
+
+export async function listRunCases(runId: number): Promise<RunCase[]> {
+  return apiFetch(`/runs/${runId}/cases`);
 }
