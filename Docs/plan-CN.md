@@ -86,7 +86,13 @@
   - [x] Platform API workflow/run/run_trace 基础表结构与单 case 执行封装
   - [x] 前端 Workflow 页面：创建模板、输入 case、展示 output JSON + trace
   - [x] 测试验证：AI Runtime 56 个 pytest 全绿，Platform API Gradle 全测通过，前端 lint/build 通过
-- [ ] **Milestone 5: Kafka 异步 Run & Dataset** (Week 8) ⏳ 未开始
+- [x] **Milestone 5: Kafka-ready Run & Dataset happy path** (Week 8) ✅ 快速版已完成
+  - [x] Dataset JSONL 上传与落库（`datasets` / `dataset_items`）
+  - [x] 批量 Run 创建、case 级执行结果、成功/失败统计（`runs` / `run_cases`）
+  - [x] 前端 Runs 页面：上传 dataset、发起 Run、查看 run/case 结果
+  - [x] Docker Compose 新增 Kafka，Platform API 定义并记录 `run.requested` 事件 payload
+  - [x] GitHub Actions 基础 CI：frontend lint/build、Platform API test、AI Runtime pytest
+  - [ ] 生产级 Kafka producer/consumer worker 待补强：当前为了本地 happy path 稳定，Platform API 采用同步执行 fallback
 
 ---
 
@@ -445,22 +451,26 @@ GitHub Actions：
 - [x] 在 UI 中选定 Project + Workflow，输入一个 case，能得到结构化 JSON 输出和节点 trace
 - [x] 数据库中能查到相应的 run、run_traces 记录
 
-### **Milestone 5：Kafka 异步 Run & Dataset（第 8 周）**
+### **Milestone 5：Kafka-ready Run & Dataset（第 8 周）** ✅ 快速版已完成
 
 - 异步 Run 编排
-    - 定义 `run.requested` 事件 schema，并由 Platform API 发送到 Kafka
-    - 实现 Worker（Python Kafka Consumer），消费 dataset，逐条调用 Workflow
-    - Worker 回写结果与状态到 Platform API（`/internal/runs/...`）或直接写 DB
+    - [x] 定义 `run.requested` 事件 schema，并在 Platform API 创建 Run 时记录结构化 payload
+    - [x] `docker-compose` 新增 Kafka 单节点服务，保留真实消息队列运行环境
+    - [ ] 实现真实 Kafka producer + Python Kafka Consumer worker，消费 dataset，逐条调用 Workflow
+    - [ ] Worker 回写结果与状态到 Platform API（`/internal/runs/...`）或直接写 DB
+    - [x] 快速 demo fallback：Platform API 在创建 Run 后同步逐条调用 AI Runtime `/execute-case`，保证 happy path 可跑通
 - Dataset 与批量 Run
-    - 支持 Dataset 元数据与条目（`datasets`、`dataset_items`）的上传与落库
-    - Run 列表与详情页：可以看到 Run 从 `QUEUED` → `RUNNING` → `SUCCESS/FAILED`，以及 case 列表
+    - [x] 支持 Dataset 元数据与条目（`datasets`、`dataset_items`）的上传与落库
+    - [x] Run 列表与详情页：可以看到 Run 状态、成功/失败 case 数，以及 case 列表
 - 基础审计与 CI/CD
-    - 审计日志：记录关键操作（登录、创建项目、发起 Run 等）
-    - GitHub Actions：前端 lint + build，后端/AI Runtime 测试 + Docker build
+    - [ ] 审计日志：记录关键操作（登录、创建项目、发起 Run 等）
+    - [x] GitHub Actions：前端 lint + build，后端/AI Runtime 测试
+    - [ ] Docker image build 待补充 Dockerfile 后接入 CI
 
 验收：
-- 从 UI 上传一个 dataset，发起一个 Run，能看到 Kafka 驱动的异步执行流程；Run 状态随执行推进更新
-- 能通过简单的审计与指标（例如 Run 数量、成功率）复盘一次执行
+- [x] 从 UI 上传一个 dataset，发起一个 Run，能看到 Run 状态与 case 级结果
+- [x] 能通过 Run 数量、成功/失败 case 数复盘一次执行
+- [ ] Kafka 驱动的真实异步 worker 与审计回放留到下一轮集中 debug/补强
 
 ---
 

@@ -23,3 +23,7 @@ jwt:
 # Spring Boot calls these endpoints to index documents and search the knowledge base.
 ai-runtime:
   base-url: ${AI_RUNTIME_URL:http://localhost:8000}
+
+kafka:
+  topic:
+    run-requested: run.requested

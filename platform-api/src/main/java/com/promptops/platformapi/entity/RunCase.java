@@ -1,55 +1,36 @@
 package com.promptops.platformapi.entity;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.time.Instant;
-import java.util.List;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "runs")
+@Table(name = "run_cases")
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class Run {
+public class RunCase {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "project_id", nullable = false)
-  private Long projectId;
+  @Column(name = "run_id", nullable = false)
+  private Long runId;
 
-  @Column(name = "workflow_id", nullable = false)
-  private Long workflowId;
-
-  @Column(name = "dataset_id")
-  private Long datasetId;
-
-  @Column(name = "case_id", length = 100)
+  @Column(name = "case_id", nullable = false, length = 100)
   private String caseId;
 
-  @Column(name = "user_input", columnDefinition = "TEXT")
-  private String userInput;
+  @Column(name = "input_text", columnDefinition = "TEXT")
+  private String inputText;
 
   @Column(nullable = false, length = 20)
   private String status;
-
-  @Column(name = "total_cases")
-  private Integer totalCases;
-
-  @Column(name = "success_cases")
-  private Integer successCases;
-
-  @Column(name = "failed_cases")
-  private Integer failedCases;
 
   @Column(name = "output_json", columnDefinition = "JSON")
   private String outputJson;
@@ -60,12 +41,6 @@ public class Run {
   @Column(name = "error_message", columnDefinition = "TEXT")
   private String errorMessage;
 
-  @Column(name = "started_at")
-  private Instant startedAt;
-
-  @Column(name = "ended_at")
-  private Instant endedAt;
-
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
   private Instant createdAt;
@@ -73,7 +48,4 @@ public class Run {
   @UpdateTimestamp
   @Column(name = "updated_at")
   private Instant updatedAt;
-
-  @Transient
-  private List<RunTrace> traces;
 }

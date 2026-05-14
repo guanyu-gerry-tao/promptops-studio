@@ -3,7 +3,10 @@
 
 -- Drop tables if exist (for clean reinstall)
 DROP TABLE IF EXISTS run_traces;
+DROP TABLE IF EXISTS run_cases;
 DROP TABLE IF EXISTS runs;
+DROP TABLE IF EXISTS dataset_items;
+DROP TABLE IF EXISTS datasets;
 DROP TABLE IF EXISTS workflows;
 DROP TABLE IF EXISTS kb_docs;
 DROP TABLE IF EXISTS audit_logs;
@@ -136,6 +139,50 @@ CREATE TABLE workflows (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Workflow definitions';
 
 -- ==============================================
+-- Table: datasets
+-- Description: Uploaded JSONL test datasets.
+-- ==============================================
+CREATE TABLE datasets (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'Dataset ID',
+    project_id BIGINT NOT NULL COMMENT 'Owning project ID',
+    name VARCHAR(100) NOT NULL COMMENT 'Dataset name',
+    items_count INT DEFAULT 0 COMMENT 'Number of dataset items',
+    status VARCHAR(20) DEFAULT 'READY' COMMENT 'READY, FAILED',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+
+    INDEX idx_datasets_project_id (project_id),
+
+    CONSTRAINT fk_dataset_project
+        FOREIGN KEY (project_id)
+        REFERENCES projects(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Datasets';
+
+-- ==============================================
+-- Table: dataset_items
+-- Description: Individual JSONL cases inside a dataset.
+-- ==============================================
+CREATE TABLE dataset_items (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'Dataset item ID',
+    dataset_id BIGINT NOT NULL COMMENT 'Dataset ID',
+    case_id VARCHAR(100) NOT NULL COMMENT 'Case identifier',
+    input_text TEXT NOT NULL COMMENT 'Case input text',
+    tags_json JSON COMMENT 'Optional tags',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+
+    INDEX idx_dataset_items_dataset_id (dataset_id),
+    INDEX idx_dataset_items_case_id (case_id),
+
+    CONSTRAINT fk_dataset_item_dataset
+        FOREIGN KEY (dataset_id)
+        REFERENCES datasets(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Dataset items';
+
+-- ==============================================
 -- Table: runs
 -- Description: Single-case workflow executions for Milestone 4.
 -- ==============================================
@@ -143,9 +190,13 @@ CREATE TABLE runs (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'Run ID',
     project_id BIGINT NOT NULL COMMENT 'Owning project ID',
     workflow_id BIGINT NOT NULL COMMENT 'Workflow ID',
-    case_id VARCHAR(100) NOT NULL COMMENT 'Case identifier',
+    dataset_id BIGINT COMMENT 'Dataset ID for batch runs',
+    case_id VARCHAR(100) COMMENT 'Case identifier for single-case runs',
     user_input TEXT COMMENT 'Input question/case text',
     status VARCHAR(20) NOT NULL DEFAULT 'QUEUED' COMMENT 'QUEUED, RUNNING, SUCCESS, FAILED',
+    total_cases INT DEFAULT 0 COMMENT 'Total cases in batch run',
+    success_cases INT DEFAULT 0 COMMENT 'Successful case count',
+    failed_cases INT DEFAULT 0 COMMENT 'Failed case count',
     output_json JSON COMMENT 'Structured workflow output',
     citations_json JSON COMMENT 'Aggregated citations',
     error_message TEXT COMMENT 'Error details if failed',
@@ -170,6 +221,32 @@ CREATE TABLE runs (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Workflow runs';
+
+-- ==============================================
+-- Table: run_cases
+-- Description: Per-case results for a dataset run.
+-- ==============================================
+CREATE TABLE run_cases (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'Run case ID',
+    run_id BIGINT NOT NULL COMMENT 'Run ID',
+    case_id VARCHAR(100) NOT NULL COMMENT 'Case identifier',
+    input_text TEXT COMMENT 'Case input',
+    status VARCHAR(20) NOT NULL DEFAULT 'QUEUED' COMMENT 'QUEUED, RUNNING, SUCCESS, FAILED',
+    output_json JSON COMMENT 'Structured case output',
+    citations_json JSON COMMENT 'Aggregated citations',
+    error_message TEXT COMMENT 'Error details if failed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+
+    INDEX idx_run_cases_run_id (run_id),
+    INDEX idx_run_cases_case_id (case_id),
+
+    CONSTRAINT fk_run_case_run
+        FOREIGN KEY (run_id)
+        REFERENCES runs(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Run case results';
 
 -- ==============================================
 -- Table: run_traces
