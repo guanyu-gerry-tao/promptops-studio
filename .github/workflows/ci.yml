@@ -70,4 +70,5 @@ jobs:
       - name: Build ai-runtime image
         run: docker build -t promptops-ai-runtime:ci ./ai-runtime
       - name: Validate Kubernetes YAML syntax
-        run: ruby -e 'require "yaml"; Dir["deploy/k8s/*.yaml"].sort.each { |f| YAML.load_stream(File.read(f)); puts "validated #{f}" }'
+        run: |
+          ruby -e 'require "yaml"; Dir["deploy/k8s/*.yaml"].sort.each { |f| YAML.load_stream(File.read(f)); puts "validated #{f}" }'
