@@ -1,6 +1,6 @@
 # PromptOps Studio
 
-An AI application testing and evaluation platform. Users can upload knowledge base documents, create AI workflows (e.g. RAG Q&A), prepare test datasets, and run batch evaluations. The system executes all test cases asynchronously and displays results, citations, node-level execution traces, and audit logs.
+A full-stack platform for testing and evaluating AI applications — upload knowledge base documents, design RAG workflows, run batch evaluations asynchronously, and inspect node-level execution traces and audit logs.
 
 ## Tech Stack
 
