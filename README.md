@@ -60,6 +60,18 @@ Default test accounts created by seed data:
 | `admin` | `password` | Admin |
 | `testuser` | `password` | User |
 
+## Kubernetes Deployment
+
+Milestone 6 adds Dockerfiles and local k8s manifests for the full demo stack: `frontend`, `platform-api`, `platform-worker`, `ai-runtime`, MySQL, Redis, Kafka, and Weaviate.
+
+Start from the guide:
+
+```bash
+open Docs/k8s-deployment-guide-CN.md
+```
+
+The k8s path is intended for kind/minikube portfolio demos. The bundled stateful dependencies use temporary `emptyDir` storage; production hardening should replace them with managed services or StatefulSet/PVC-backed deployments.
+
 ## Quick Start
 
 Each service has a `start.sh` that automatically starts its Docker dependencies, waits for readiness, and launches the dev server:
@@ -264,3 +276,4 @@ Weaviate must be running (`docker compose up -d`). Confirm with `curl http://loc
 
 - `Docs/happy-path-demo-script-CN.md` contains a 3-5 minute demo path for the current happy path.
 - `Docs/resume-project-descriptions.md` contains 10 bilingual project descriptions for resume and interview reuse.
+- `Docs/k8s-deployment-guide-CN.md` contains the Milestone 6 Kubernetes deployment path.

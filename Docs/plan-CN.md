@@ -93,6 +93,12 @@
   - [x] Docker Compose 新增 Kafka，Platform API 发布 `run.requested` 事件，Worker 消费执行
   - [x] GitHub Actions 基础 CI：frontend lint/build、Platform API test、AI Runtime pytest
   - [x] 独立 Worker 启动脚本：`platform-api/start-worker.sh`
+- [x] **Milestone 6: Kubernetes 部署与平台化演示** (Week 9) ✅ 快速版已完成
+  - [x] 为 `frontend`、`platform-api`、`platform-api-worker`、`ai-runtime` 补齐 Dockerfile / image build
+  - [x] 编写 `deploy/k8s/` manifests：Deployment、Service、ConfigMap、Secret、Ingress
+  - [x] 将 MySQL / Redis / Kafka / Weaviate 作为本地 k8s demo 依赖接入
+  - [x] 更新 GitHub Actions：测试通过后构建应用镜像并校验 k8s YAML 语法
+  - [x] 写 k8s happy path 文档：从部署到触发一次 Kafka Run
 
 ---
 
@@ -472,6 +478,51 @@ GitHub Actions：
 - [x] 能通过 Run 数量、成功/失败 case 数复盘一次执行
 - [x] Kafka 驱动的真实异步 worker 已接入；审计回放留到下一轮集中 debug/补强
 
+### **Milestone 6：Kubernetes 部署与平台化演示（第 9 周）** ✅ 快速版已完成
+
+目标：把当前已经跑通的多服务架构从 `docker-compose` 本地开发模式，升级成一个可展示的 k8s 平台化部署版本。重点不是一开始就做生产级集群，而是让作品能清楚展示：服务容器化、配置外置、API/Worker 分离部署、服务发现、Ingress 入口、CI 构建镜像，以及一次端到端 Run 如何跨服务流转。
+
+- 容器化边界
+    - [x] 为 `frontend` 增加 Dockerfile：构建 Next.js app，并暴露 Web 入口
+    - [x] 为 `platform-api` 增加 Dockerfile：构建 Spring Boot jar，运行 REST API 进程
+    - [x] 为 `platform-api-worker` 增加独立镜像/启动命令：同一 jar，不同环境变量，开启 `PROMPTOPS_WORKER_ENABLED=true`
+    - [x] 为 `ai-runtime` 增加 Dockerfile：安装 Poetry 依赖，运行 FastAPI/Uvicorn
+- k8s manifests（建议先放在 `deploy/k8s/`）
+    - [x] `namespace.yaml`：隔离 PromptOps Studio 资源
+    - [x] `configmap.yaml`：保存服务地址、Kafka topic、非敏感配置
+    - [x] `secret.yaml`：保存 JWT secret、OpenAI key 等敏感配置（本地 demo 用占位值）
+    - [x] `frontend-deployment.yaml` + `frontend-service.yaml`
+    - [x] `platform-api-deployment.yaml` + `platform-api-service.yaml`
+    - [x] `platform-worker-deployment.yaml`
+    - [x] `ai-runtime-deployment.yaml` + `ai-runtime-service.yaml`
+    - [x] `ingress.yaml`：统一暴露前端入口，必要时转发 `/api/*`
+- 依赖服务策略
+    - [x] 第一版推荐：MySQL / Redis / Kafka / Weaviate 先作为 demo 级依赖接入，降低 k8s 状态服务复杂度
+    - [x] 补 demo 级 Deployment / Service，用 `emptyDir` 支撑 kind 或 minikube 本地演示
+    - [x] 明确服务发现地址：k8s 内部用 Service DNS，例如 `platform-api.promptops.svc.cluster.local`
+- CI/CD 与镜像
+    - [x] GitHub Actions 在测试通过后执行 Docker build
+    - [x] 镜像命名建议：`promptops-frontend`、`promptops-platform-api`、`promptops-ai-runtime`
+    - [ ] 可选：推送到 GHCR（GitHub Container Registry）
+    - [x] 增加最小 smoke：镜像构建成功 + k8s manifest YAML 语法校验
+- 演示与文档
+    - [x] 新增 `Docs/k8s-deployment-guide-CN.md`
+    - [x] 写清本地 kind/minikube 启动路径
+    - [x] 写清如何部署 manifests、查看 Pod、查看 Service、访问前端
+    - [x] 写一条 k8s happy path：上传 dataset → Platform API 发 Kafka → Worker 消费 → Run 成功
+
+验收：
+- [x] 本地/CI 可以构建三个应用镜像：frontend、platform-api（API/Worker 复用）、ai-runtime
+- [x] CI 可以校验 manifest YAML 语法；真实 `kubectl apply -f deploy/k8s/` 需要本地 kind/minikube 集群
+- [x] 前端通过 `PLATFORM_API_URL` 访问 Platform API，Platform API 通过 `AI_RUNTIME_URL` 访问 AI Runtime
+- [x] worker deployment 已配置 Kafka consumer 和 DB/AI Runtime 地址，用于消费 Kafka 消息并更新 Run 状态
+- [x] README 或独立文档中有一条可复现的 k8s demo 命令链
+
+推荐切法：
+- 第一 PR：Dockerfile + `.dockerignore` + 本地镜像构建验证
+- 第二 PR：`deploy/k8s/` manifests + kind/minikube 本地部署文档
+- 第三 PR：GitHub Actions image build + k8s demo/smoke 文档
+
 ---
 
 ## **12. 风险与降级策略（确保按时交付）**
@@ -481,14 +532,17 @@ GitHub Actions：
 - Kafka 调不通：先用 Celery/Redis Queue 或 Spring 定时拉取（但保留 Kafka 设计文档），确保演示不断档
 - Weaviate 配置复杂：先用本地向量库（FAISS/Chroma）跑通流程，再切回 Weaviate
 - LangGraph 上手慢：先固定链路实现，再替换为 LangGraph（保持接口不变）
+- k8s 状态服务太重：第一版先把 MySQL / Redis / Kafka / Weaviate 当外部依赖，只把应用服务部署到 k8s
+- 镜像构建耗时：先做本地 Dockerfile build，再接 GitHub Actions 和 GHCR
 
 交付优先级（从高到低）：
 
 1. Run 异步闭环（Kafka）+ trace 展示
 2. Weaviate 混合检索 + citations ✅ 已完成
 3. Workflow 模板化（LangGraph）
-4. 权限/审计（最简）
-5. 评测指标与 UI 打磨
+4. Kubernetes 应用服务部署（API / Worker / AI Runtime / Frontend）
+5. 权限/审计（最简）
+6. 评测指标与 UI 打磨
 
 ---
 
@@ -500,3 +554,5 @@ GitHub Actions：
 - 10 份假文档 + 1 份 dataset（JSONL）
 - Run 页面：状态、结果、trace、审计
 - README：启动方式、演示脚本（3 分钟）
+- k8s 部署清单：Deployment、Service、ConfigMap、Secret、Ingress
+- k8s 演示文档：从部署到发起一次 Kafka Run
