@@ -146,12 +146,20 @@ export default function ProjectsPage() {
                     <p className="text-sm text-gray-500">{p.description}</p>
                   )}
                 </div>
-                <button
-                  onClick={() => router.push(`/projects/${p.id}/kb`)}
-                  className="rounded bg-gray-100 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-200"
-                >
-                  Knowledge Base →
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => router.push(`/projects/${p.id}/kb`)}
+                    className="rounded bg-gray-100 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-200"
+                  >
+                    KB
+                  </button>
+                  <button
+                    onClick={() => router.push(`/projects/${p.id}/workflow`)}
+                    className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                  >
+                    Workflow →
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

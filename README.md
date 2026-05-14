@@ -190,8 +190,13 @@ All tests use mocks — no live OpenAI or Weaviate connection required.
 | `GET` | `/projects` | List projects |
 | `POST` | `/projects` | Create project |
 | `POST` | `/projects/{id}/kb/docs` | Upload KB document metadata |
-| `POST` | `/projects/{id}/kb/index` | Trigger indexing via AI Runtime |
+| `GET` | `/projects/{id}/kb/docs` | List KB documents |
 | `POST` | `/projects/{id}/kb/search` | Hybrid search with optional `alpha` (0.0=BM25, 1.0=vector) |
+| `GET` | `/projects/{id}/workflows` | List workflow templates for a project |
+| `POST` | `/projects/{id}/workflows` | Create a workflow from a template |
+| `POST` | `/projects/{id}/execute-case` | Run one workflow case and persist output + trace |
+| `GET` | `/projects/{id}/runs` | List workflow runs for a project |
+| `GET` | `/runs/{runId}` | Fetch one run with node-level trace records |
 
 ### AI Runtime (`http://localhost:8000`)
 

@@ -2,6 +2,10 @@
 -- Milestone 2: User and Project Management
 
 -- Drop tables if exist (for clean reinstall)
+DROP TABLE IF EXISTS run_traces;
+DROP TABLE IF EXISTS runs;
+DROP TABLE IF EXISTS workflows;
+DROP TABLE IF EXISTS kb_docs;
 DROP TABLE IF EXISTS audit_logs;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS users;
@@ -106,6 +110,93 @@ CREATE TABLE kb_docs (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Knowledge base documents';
+
+-- ==============================================
+-- Table: workflows
+-- Description: Workflow definitions created from templates.
+-- ==============================================
+CREATE TABLE workflows (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'Workflow ID',
+    project_id BIGINT NOT NULL COMMENT 'Owning project ID',
+    name VARCHAR(100) NOT NULL COMMENT 'Workflow display name',
+    template_id VARCHAR(50) NOT NULL COMMENT 'Template identifier, e.g. rag_json',
+    config_json JSON COMMENT 'Template configuration JSON',
+    status VARCHAR(20) DEFAULT 'ACTIVE' COMMENT 'Status: ACTIVE, ARCHIVED',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+
+    INDEX idx_workflows_project_id (project_id),
+    INDEX idx_workflows_template_id (template_id),
+
+    CONSTRAINT fk_workflow_project
+        FOREIGN KEY (project_id)
+        REFERENCES projects(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Workflow definitions';
+
+-- ==============================================
+-- Table: runs
+-- Description: Single-case workflow executions for Milestone 4.
+-- ==============================================
+CREATE TABLE runs (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'Run ID',
+    project_id BIGINT NOT NULL COMMENT 'Owning project ID',
+    workflow_id BIGINT NOT NULL COMMENT 'Workflow ID',
+    case_id VARCHAR(100) NOT NULL COMMENT 'Case identifier',
+    user_input TEXT COMMENT 'Input question/case text',
+    status VARCHAR(20) NOT NULL DEFAULT 'QUEUED' COMMENT 'QUEUED, RUNNING, SUCCESS, FAILED',
+    output_json JSON COMMENT 'Structured workflow output',
+    citations_json JSON COMMENT 'Aggregated citations',
+    error_message TEXT COMMENT 'Error details if failed',
+    started_at TIMESTAMP NULL COMMENT 'Execution start time',
+    ended_at TIMESTAMP NULL COMMENT 'Execution end time',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update timestamp',
+
+    INDEX idx_runs_project_id (project_id),
+    INDEX idx_runs_workflow_id (workflow_id),
+    INDEX idx_runs_status (status),
+    INDEX idx_runs_created_at (created_at),
+
+    CONSTRAINT fk_run_project
+        FOREIGN KEY (project_id)
+        REFERENCES projects(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_run_workflow
+        FOREIGN KEY (workflow_id)
+        REFERENCES workflows(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Workflow runs';
+
+-- ==============================================
+-- Table: run_traces
+-- Description: Node-level trace records for each run.
+-- ==============================================
+CREATE TABLE run_traces (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'Trace ID',
+    run_id BIGINT NOT NULL COMMENT 'Run ID',
+    case_id VARCHAR(100) NOT NULL COMMENT 'Case identifier',
+    node_name VARCHAR(100) NOT NULL COMMENT 'Workflow node name',
+    input_summary TEXT COMMENT 'Short input summary',
+    output_summary TEXT COMMENT 'Short output summary',
+    latency_ms INT COMMENT 'Node latency in milliseconds',
+    token_count INT COMMENT 'Token usage if provided',
+    citations_json JSON COMMENT 'Node citations',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation timestamp',
+
+    INDEX idx_run_traces_run_id (run_id),
+    INDEX idx_run_traces_case_id (case_id),
+    INDEX idx_run_traces_node_name (node_name),
+
+    CONSTRAINT fk_trace_run
+        FOREIGN KEY (run_id)
+        REFERENCES runs(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Run trace records';
 
 -- ==============================================
 -- Insert test data (for development)

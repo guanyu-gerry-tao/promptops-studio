@@ -14,7 +14,10 @@ export default function Dashboard() {
       router.push("/login");
       return;
     }
-    setUser(getUser());
+    const timer = window.setTimeout(() => {
+      setUser(getUser());
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [router]);
 
   function handleLogout() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useCallback, useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import {
   getToken,
@@ -39,15 +39,7 @@ export default function KbPage({ params }: PageProps) {
   const [searchResults, setSearchResults] = useState<ChunkResult[] | null>(null);
   const [searchError, setSearchError] = useState("");
 
-  useEffect(() => {
-    if (!getToken()) {
-      router.push("/login");
-      return;
-    }
-    fetchDocs();
-  }, [projectId, router]);
-
-  async function fetchDocs() {
+  const fetchDocs = useCallback(async () => {
     setDocsLoading(true);
     try {
       const data = await listDocs(projectId);
@@ -55,7 +47,15 @@ export default function KbPage({ params }: PageProps) {
     } finally {
       setDocsLoading(false);
     }
-  }
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!getToken()) {
+      router.push("/login");
+      return;
+    }
+    void fetchDocs();
+  }, [fetchDocs, router]);
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
