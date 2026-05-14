@@ -11,6 +11,19 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:promptops-run-worker}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.promptops.platformapi.dto
+        spring.json.value.default.type: com.promptops.platformapi.dto.RunRequestedEvent
 
 # JWT configuration
 # ${JWT_SECRET:default} syntax means: read env var JWT_SECRET, if not set use the default value.
@@ -27,3 +40,9 @@ ai-runtime:
 kafka:
   topic:
     run-requested: run.requested
+
+promptops:
+  worker:
+    enabled: ${PROMPTOPS_WORKER_ENABLED:false}
+  runs:
+    sync-fallback-enabled: ${PROMPTOPS_RUN_SYNC_FALLBACK:false}

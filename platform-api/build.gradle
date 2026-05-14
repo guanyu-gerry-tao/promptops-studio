@@ -28,6 +28,7 @@ dependencies {
     // --- Core ---
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'   // ORM layer: maps Java objects to database tables via JPA/Hibernate
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'     // REST API support: @RestController, @GetMapping, etc.
+    implementation 'org.springframework.kafka:spring-kafka'                  // Kafka producer/consumer for async dataset run orchestration
 
     // --- Developer tools ---
     compileOnly 'org.projectlombok:lombok'                                   // Generates getters/setters/constructors at compile time via annotations

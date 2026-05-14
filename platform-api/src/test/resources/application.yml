@@ -12,6 +12,19 @@ spring:
       ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
     show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: promptops-run-worker-test
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.promptops.platformapi.dto
+        spring.json.value.default.type: com.promptops.platformapi.dto.RunRequestedEvent
 
 jwt:
   secret: test-secret-key-must-be-at-least-32-bytes-long
@@ -21,3 +34,13 @@ jwt:
 # Spring Boot calls these endpoints to index documents and search the knowledge base.
 ai-runtime:
   base-url: ${AI_RUNTIME_URL:http://localhost:8000}
+
+kafka:
+  topic:
+    run-requested: run.requested
+
+promptops:
+  worker:
+    enabled: false
+  runs:
+    sync-fallback-enabled: false
