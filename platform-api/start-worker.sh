@@ -3,9 +3,8 @@ set -e
 
 cd "$(dirname "$0")"
 
-echo "=== Platform API (Spring Boot) ==="
+echo "=== Platform API Run Worker (Kafka Consumer) ==="
 
-# Start dependent services (MySQL, Redis, Kafka)
 echo "Starting dependent services (MySQL, Redis, Kafka)..."
 docker compose -f ../docker-compose.yml up -d mysql redis kafka
 
@@ -15,5 +14,5 @@ until docker exec promptops-mysql mysqladmin ping -h localhost -u root -ppasswor
 done
 echo "MySQL is ready."
 
-echo "Building and starting..."
-./gradlew bootRun
+echo "Building and starting worker..."
+PROMPTOPS_WORKER_ENABLED=true ./gradlew bootRun --args='--spring.main.web-application-type=none'

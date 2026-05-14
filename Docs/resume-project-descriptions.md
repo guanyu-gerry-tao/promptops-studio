@@ -40,9 +40,9 @@ English: Built Spring Boot and JPA-based REST APIs and persistence models for co
 
 ## 7. Run Orchestration Boundary
 
-中文：定义 `run.requested` 事件 schema 和 Kafka-ready 编排边界，为后续异步 worker 消费 dataset、逐条执行 workflow、回写结果提供清晰扩展点。
+中文：定义 `run.requested` 事件 schema，并实现 Kafka producer/consumer worker，把批量 Run 从 API 请求线程中拆出，支持异步消费 dataset、逐条执行 workflow、回写结果。
 
-English: Defined a `run.requested` event schema and Kafka-ready orchestration boundary, creating a clear extension point for future async workers to consume datasets, execute workflows, and write back results.
+English: Defined a `run.requested` event schema and implemented a Kafka producer/consumer worker to move batch runs out of the API request path, asynchronously consume datasets, execute workflows, and write back results.
 
 ## 8. AI Runtime Service
 

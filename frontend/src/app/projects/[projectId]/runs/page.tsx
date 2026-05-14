@@ -262,7 +262,12 @@ export default function RunsPage({ params }: PageProps) {
 
             <section className="grid gap-6 lg:grid-cols-[320px_1fr]">
               <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-                <h3 className="mb-3 font-semibold text-gray-900">Runs</h3>
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-900">Runs</h3>
+                  <button onClick={() => void refresh()} disabled={busy} className="text-xs font-medium text-blue-600 hover:text-blue-700">
+                    Refresh
+                  </button>
+                </div>
                 {runs.length === 0 ? (
                   <p className="text-sm text-gray-400">No runs yet.</p>
                 ) : (
@@ -296,7 +301,11 @@ export default function RunsPage({ params }: PageProps) {
                 </div>
 
                 {cases.length === 0 ? (
-                  <p className="text-sm text-gray-400">Select or start a run to see cases.</p>
+                  <p className="text-sm text-gray-400">
+                    {activeRun?.status === "QUEUED" || activeRun?.status === "RUNNING"
+                      ? "Worker is still processing this run. Refresh to load case results."
+                      : "Select or start a run to see cases."}
+                  </p>
                 ) : (
                   <div className="space-y-3">
                     {cases.map((item) => (

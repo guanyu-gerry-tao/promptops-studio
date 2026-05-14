@@ -9,7 +9,6 @@ import com.promptops.platformapi.entity.Dataset;
 import com.promptops.platformapi.entity.DatasetItem;
 import com.promptops.platformapi.entity.Run;
 import com.promptops.platformapi.entity.RunCase;
-import com.promptops.platformapi.entity.RunTrace;
 import com.promptops.platformapi.entity.Workflow;
 import com.promptops.platformapi.exception.BusinessException;
 import com.promptops.platformapi.repository.DatasetItemRepository;
@@ -19,19 +18,12 @@ import com.promptops.platformapi.repository.RunCaseRepository;
 import com.promptops.platformapi.repository.RunRepository;
 import com.promptops.platformapi.repository.RunTraceRepository;
 import com.promptops.platformapi.repository.WorkflowRepository;
-import java.net.http.HttpClient;
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 @Service
 public class DatasetRunServiceImpl implements DatasetRunService {
@@ -45,7 +37,9 @@ public class DatasetRunServiceImpl implements DatasetRunService {
   private final RunRepository runRepository;
   private final RunCaseRepository runCaseRepository;
   private final RunTraceRepository runTraceRepository;
-  private final RestClient restClient;
+  private final RunRequestedPublisher runRequestedPublisher;
+  private final RunExecutionService runExecutionService;
+  private final boolean syncFallbackEnabled;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   public DatasetRunServiceImpl(
@@ -56,7 +50,9 @@ public class DatasetRunServiceImpl implements DatasetRunService {
       RunRepository runRepository,
       RunCaseRepository runCaseRepository,
       RunTraceRepository runTraceRepository,
-      @Value("${ai-runtime.base-url}") String aiRuntimeBaseUrl) {
+      RunRequestedPublisher runRequestedPublisher,
+      RunExecutionService runExecutionService,
+      @Value("${promptops.runs.sync-fallback-enabled:false}") boolean syncFallbackEnabled) {
     this.projectRepository = projectRepository;
     this.datasetRepository = datasetRepository;
     this.datasetItemRepository = datasetItemRepository;
@@ -64,16 +60,9 @@ public class DatasetRunServiceImpl implements DatasetRunService {
     this.runRepository = runRepository;
     this.runCaseRepository = runCaseRepository;
     this.runTraceRepository = runTraceRepository;
-
-    HttpClient httpClient = HttpClient.newBuilder()
-        .version(HttpClient.Version.HTTP_1_1)
-        .build();
-
-    this.restClient = RestClient.builder()
-        .baseUrl(aiRuntimeBaseUrl)
-        .requestFactory(new JdkClientHttpRequestFactory(httpClient))
-        .defaultHeader("Content-Type", "application/json")
-        .build();
+    this.runRequestedPublisher = runRequestedPublisher;
+    this.runExecutionService = runExecutionService;
+    this.syncFallbackEnabled = syncFallbackEnabled;
   }
 
   @Override
@@ -112,7 +101,6 @@ public class DatasetRunServiceImpl implements DatasetRunService {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Run startRun(Long projectId, RunRequest request) {
     requireProject(projectId);
     Dataset dataset = datasetRepository.findByIdAndProjectId(request.getDatasetId(), projectId)
@@ -134,77 +122,13 @@ public class DatasetRunServiceImpl implements DatasetRunService {
     RunRequestedEvent event = new RunRequestedEvent(
         run.getId(), projectId, workflow.getId(), dataset.getId(), request.getSchemaId());
     log.info("run.requested payload={}", toJson(event));
+    runRequestedPublisher.publish(event);
 
-    run.setStatus("RUNNING");
-    run.setStartedAt(Instant.now());
-    run = runRepository.save(run);
-
-    int success = 0;
-    int failed = 0;
-    for (DatasetItem item : items) {
-      RunCase runCase = new RunCase();
-      runCase.setRunId(run.getId());
-      runCase.setCaseId(item.getCaseId());
-      runCase.setInputText(item.getInputText());
-      runCase.setStatus("RUNNING");
-      runCase = runCaseRepository.save(runCase);
-
-      try {
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("project_id", projectId);
-        requestBody.put("workflow_id", workflow.getTemplateId());
-        requestBody.put("case_id", item.getCaseId());
-        requestBody.put("user_input", item.getInputText());
-        if (request.getSchemaId() != null && !request.getSchemaId().isBlank()) {
-          requestBody.put("schema_id", request.getSchemaId());
-        }
-
-        Map<String, Object> response = restClient.post()
-            .uri("/execute-case")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(requestBody)
-            .retrieve()
-            .body(Map.class);
-
-        String status = (String) response.getOrDefault("status", "FAILED");
-        runCase.setStatus(status);
-        runCase.setOutputJson(toJson(response.get("output_json")));
-        runCase.setCitationsJson(toJson(response.get("citations")));
-        runCase.setErrorMessage((String) response.get("error_message"));
-        runCaseRepository.save(runCase);
-
-        List<Map<String, Object>> traces = (List<Map<String, Object>>) response.getOrDefault("trace", List.of());
-        for (Map<String, Object> trace : traces) {
-          RunTrace runTrace = new RunTrace();
-          runTrace.setRunId(run.getId());
-          runTrace.setCaseId(item.getCaseId());
-          runTrace.setNodeName((String) trace.get("node_name"));
-          runTrace.setInputSummary((String) trace.get("input_summary"));
-          runTrace.setOutputSummary((String) trace.get("output_summary"));
-          runTrace.setLatencyMs(asInteger(trace.get("latency_ms")));
-          runTrace.setTokenCount(asInteger(trace.get("token_count")));
-          runTrace.setCitationsJson(toJson(trace.get("citations")));
-          runTraceRepository.save(runTrace);
-        }
-
-        if ("SUCCESS".equals(status)) {
-          success++;
-        } else {
-          failed++;
-        }
-      } catch (Exception e) {
-        failed++;
-        runCase.setStatus("FAILED");
-        runCase.setErrorMessage("ai-runtime execute-case failed: " + e.getMessage());
-        runCaseRepository.save(runCase);
-      }
+    if (syncFallbackEnabled) {
+      return runExecutionService.execute(event);
     }
 
-    run.setSuccessCases(success);
-    run.setFailedCases(failed);
-    run.setStatus(failed == 0 ? "SUCCESS" : "FAILED");
-    run.setEndedAt(Instant.now());
-    return runRepository.save(run);
+    return run;
   }
 
   @Override
@@ -253,16 +177,4 @@ public class DatasetRunServiceImpl implements DatasetRunService {
     }
   }
 
-  private Integer asInteger(Object value) {
-    if (value == null) {
-      return null;
-    }
-    if (value instanceof Integer integer) {
-      return integer;
-    }
-    if (value instanceof Number number) {
-      return number.intValue();
-    }
-    return Integer.valueOf(value.toString());
-  }
 }

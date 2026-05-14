@@ -65,13 +65,16 @@ Default test accounts created by seed data:
 Each service has a `start.sh` that automatically starts its Docker dependencies, waits for readiness, and launches the dev server:
 
 ```bash
-# Terminal 1 — Platform API (starts MySQL + Redis automatically)
+# Terminal 1 — Platform API (starts MySQL + Redis + Kafka automatically)
 cd platform-api && ./start.sh
 
-# Terminal 2 — AI Runtime (starts Weaviate automatically)
+# Terminal 2 — Kafka Run Worker (consumes run.requested)
+cd platform-api && ./start-worker.sh
+
+# Terminal 3 — AI Runtime (starts Weaviate automatically)
 cd ai-runtime && ./start.sh
 
-# Terminal 3 — Frontend (no external dependencies)
+# Terminal 4 — Frontend (no external dependencies)
 cd frontend && ./start.sh
 ```
 
@@ -99,6 +102,9 @@ Optional environment variable overrides:
 |---|---|---|
 | `JWT_SECRET` | `PRODUCTION_MODE_DEFAULT_JWT_SECRET` | JWT signing secret (set a real value in production) |
 | `AI_RUNTIME_URL` | `http://localhost:8000` | AI Runtime base URL |
+| `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` | Kafka bootstrap server |
+| `PROMPTOPS_WORKER_ENABLED` | `false` | Enables the Kafka `run.requested` consumer when running the worker process |
+| `PROMPTOPS_RUN_SYNC_FALLBACK` | `false` | Optional local fallback to execute runs inside Platform API without a worker |
 
 ```bash
 cd platform-api
@@ -203,7 +209,7 @@ All tests use mocks — no live OpenAI or Weaviate connection required.
 | `GET` | `/runs/{runId}/cases` | List case-level results for a batch run |
 | `GET` | `/runs/{runId}/case/{caseId}` | Fetch one case-level result |
 
-> **Milestone 5 note**: The Platform API now defines and logs a Kafka-ready `run.requested` event payload and Docker Compose includes Kafka. For local demo stability, batch runs currently execute through a synchronous fallback inside Platform API; the next production hardening step is moving that same payload into a real Kafka producer/consumer worker.
+> **Milestone 5 note**: Dataset runs are now truly queue-driven. Platform API creates a `QUEUED` run and publishes a `run.requested` Kafka event; the worker process consumes the event, calls AI Runtime for each dataset case, and writes case-level results back to MySQL. `PROMPTOPS_RUN_SYNC_FALLBACK=true` is kept only as an emergency local fallback.
 
 ### AI Runtime (`http://localhost:8000`)
 
